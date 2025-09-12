@@ -1,0 +1,117 @@
+{
+  // TOML formatter configuration
+  "evenBetterToml.formatter.columnWidth": 100,
+  "evenBetterToml.formatter.allowedBlankLines": 2,
+  "evenBetterToml.formatter.indentString": "  ",
+  "evenBetterToml.formatter.trailingNewline": true,
+  // Disable schema validation completely to avoid false positives with outdated schemas
+  "evenBetterToml.schema.enabled": false,
+  // Clear schema associations to prevent automatic schema loading
+  "evenBetterToml.schema.associations": {
+    ".*pyproject\\.toml$": ""
+  },
+  "yaml.validate": true,
+  "yaml.format.enable": true,
+  // Markdown configuration
+  "markdownlint.config": {
+    "default": true,
+    "MD001": false,
+    "MD009": false,
+    "MD010": false,
+    "MD022": false,
+    "MD024": false,
+    "MD025": false,
+    "MD029": false,
+    "MD031": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD036": false,
+    "MD040": false,
+    "MD041": false,
+    "MD046": false,
+    "MD047": false,
+    "MD059": false
+  },
+  // TypeScript/JavaScript configuration
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.formatOnSave": true,
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  // File associations
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml",
+    "Cargo.toml": "toml",
+    "Cargo.lock": "toml",
+    "rust-toolchain.toml": "toml",
+    "**/mcp_config.json": "json",
+    "mcp*.json": "json"
+  },
+  // Git configuration
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  // Search configuration
+  "search.exclude": {
+    "**/target": true,
+    "**/node_modules": true,
+  },
+  // File watcher configuration
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/node_modules/**": true,
+  },
+  // Language specific settings
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "ms-vscode.vscode-json",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  // JSON validation - restored with selective schema control
+  "json.schemaDownload.enable": true,
+  "json.validate.enable": true,
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "**/package.json"
+      ],
+      "url": "https://json.schemastore.org/package.json"
+    },
+    {
+      "fileMatch": [
+        "**/tsconfig.json",
+        "**/tsconfig.*.json"
+      ],
+      "url": "https://json.schemastore.org/tsconfig.json"
+    },
+    {
+      "fileMatch": [
+        "**/.vscode/settings.json"
+      ],
+      "url": "vscode://schemas/settings/folder"
+    },
+    {
+      "fileMatch": [
+        "**/mcp_config.json",
+        "**/mcp*.json"
+      ],
+      "schema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  ],
+  "yaml.schemas": {
+    "file:///Users/jason/.windsurf/extensions/atlassian.atlascode-3.8.14-universal/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml",
+    "https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json": "file:///Users/jason/dev/AI/fastapi-fastmcp-dockergw/docker-compose.services.yml"
+  }
+}

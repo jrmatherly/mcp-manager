@@ -1,0 +1,23 @@
+- [Authentication](https://gofastmcp.com/servers/auth/authentication.md): Secure your FastMCP server with flexible authentication patterns, from simple API keys to full OAuth 2.1 integration with external identity providers.
+- [Azure (Microsoft Entra) OAuth 🤝 FastMCP](https://gofastmcp.com/integrations/azure.md): Secure your FastMCP server with Azure/Microsoft Entra OAuth
+- [OAuth Proxy](https://gofastmcp.com/servers/auth/oauth-proxy.md): Bridge traditional OAuth providers to work seamlessly with MCP's authentication flow.
+- [Remote OAuth](https://gofastmcp.com/servers/auth/remote-oauth.md): Integrate your FastMCP server with external identity providers like WorkOS, Auth0, and corporate SSO systems.
+- [Token Verification](https://gofastmcp.com/servers/auth/token-verification.md): Protect your server by validating bearer tokens issued by external systems.
+- [Server Composition](https://gofastmcp.com/servers/composition.md): Combine multiple FastMCP servers into a single, larger application using mounting and importing.
+- [MCP Context](https://gofastmcp.com/servers/context.md): Access MCP capabilities like logging, progress, and resources within your MCP objects.
+- [User Elicitation](https://gofastmcp.com/servers/elicitation.md): Request structured input from users during tool execution through the MCP context.
+- [User Elicitation](https://gofastmcp.com/clients/elicitation.md): Handle server-initiated user input requests with structured schemas.
+- [Server Logging](https://gofastmcp.com/servers/logging.md): Send log messages back to MCP clients through the context.
+- [MCP Middleware](https://gofastmcp.com/servers/middleware.md): Add cross-cutting functionality to your MCP server with middleware that can inspect, modify, and respond to all MCP requests and responses.
+- [Decorating Methods](https://gofastmcp.com/patterns/decorating-methods.md): Properly use instance methods, class methods, and static methods with FastMCP decorators.
+- [Tool Transformation](https://gofastmcp.com/patterns/tool-transformation.md): Create enhanced tool variants with modified schemas, argument mappings, and custom behavior.
+- [Full OAuth Server](https://gofastmcp.com/servers/auth/full-oauth-server.md): Build a self-contained authentication system where your FastMCP server manages users, issues tokens, and validates them.
+- [Bearer Token Authentication](https://gofastmcp.com/clients/auth/bearer.md): Authenticate your FastMCP client with a Bearer token.
+- [OAuth Authentication](https://gofastmcp.com/clients/auth/oauth.md): Authenticate your FastMCP client via OAuth 2.1.
+- [Server Logging](https://gofastmcp.com/clients/logging.md): Receive and handle log messages from MCP servers.
+- [Message Handling](https://gofastmcp.com/clients/messages.md): Handle MCP messages, requests, and notifications with custom message handlers.
+- [Progress Monitoring](https://gofastmcp.com/clients/progress.md): Handle progress notifications from long-running server operations.
+- [Resource Operations](https://gofastmcp.com/clients/resources.md): Access static and templated resources from MCP servers.
+- [Running Your Server](https://gofastmcp.com/deployment/running-server.md): Learn how to run your FastMCP server locally for development and testing
+- [Client Transports](https://gofastmcp.com/clients/transports.md): Configure how FastMCP Clients connect to and communicate with servers.
+- [Tools](https://gofastmcp.com/servers/tools.md): Expose functions as executable capabilities for your MCP client.

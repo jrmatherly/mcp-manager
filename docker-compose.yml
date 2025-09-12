@@ -1,0 +1,147 @@
+version: "3.8"
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mcp_registry
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MCP Registry Gateway - Unified Architecture (Production)
+  app:
+    build:
+      context: .
+      target: production
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mcp_registry
+      - REDIS_URL=redis://redis:6379
+      - FASTAPI_ENV=production
+      # Unified Architecture Configuration
+      - MREG_FASTMCP_ENABLED=true
+      - MREG_FASTMCP_HOST=0.0.0.0
+      # Azure OAuth (set these in your production environment)
+      - MREG_AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+      - MREG_AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+      - MREG_AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${OAUTH_CALLBACK_URL:-http://localhost:8000/mcp/oauth/callback}
+    ports:
+      - "8000:8000" # Unified server (REST API + MCP)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:8000/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    command:
+      [
+        "uv",
+        "run",
+        "mcp-gateway",
+        "serve",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
+
+  # MCP Registry Gateway - Unified Architecture (Development)
+  app-dev:
+    build:
+      context: .
+      target: development
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mcp_registry
+      - REDIS_URL=redis://redis:6379
+      - FASTAPI_ENV=development
+      - PYTHONPATH=/app/src
+      # Unified Architecture Configuration
+      - MREG_FASTMCP_ENABLED=true
+      - MREG_FASTMCP_HOST=0.0.0.0
+      # Azure OAuth for development (optional)
+      - MREG_AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+      - MREG_AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+      - MREG_AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${OAUTH_CALLBACK_URL:-http://localhost:8002/mcp/oauth/callback}
+    ports:
+      - "8002:8000" # Unified server (development port)
+      - "5678:5678" # Debugger port
+    volumes:
+      # Mount source code for development
+      - .:/app
+      # Exclude virtual environment (use container's)
+      - /app/.venv
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - dev
+    command:
+      [
+        "uv",
+        "run",
+        "mcp-gateway",
+        "serve",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
+    develop:
+      watch:
+        # Sync source code changes
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./tests
+          target: /app/tests
+        # Rebuild on dependency changes
+        - action: rebuild
+          path: ./pyproject.toml
+        - action: rebuild
+          path: ./uv.lock
+
+volumes:
+  postgres_data:
+  redis_data:

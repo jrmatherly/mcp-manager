@@ -1,0 +1,32 @@
+# Override file for local development
+# This file is automatically loaded by docker-compose and extends docker-compose.yml
+# Add your local customizations here
+
+version: "3.8"
+
+services:
+  # Development overrides
+  app-dev:
+    environment:
+      # Add any local environment variables here
+      - DEBUG=true
+      - LOG_LEVEL=debug
+    # Uncomment to override the default command
+    # command: ["uv", "run", "uvicorn", "mcp_registry_gateway.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+  # Local database overrides (if needed)
+  postgres:
+    # Uncomment to expose on different port locally
+    # ports:
+    #   - "5433:5432"
+    environment:
+      # Override database settings for local development
+      - POSTGRES_DB=mcp_registry_dev
+
+  # Local Redis overrides (if needed)
+  redis:
+    # Uncomment to expose on different port locally
+    # ports:
+    #   - "6380:6379"
+    # Add any Redis-specific overrides here if needed
+    environment: []

@@ -1,0 +1,26 @@
+# MCP Testing Framework Dependencies for MCP Registry Gateway
+# Core testing framework
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+aiohttp>=3.8.0
+typing-extensions>=4.5.0
+
+# FastMCP and project dependencies
+fastmcp>=2.12.0
+pydantic>=2.0.0
+
+# Database testing (optional - for full Gateway testing)
+asyncpg>=0.28.0
+aioredis>=2.0.0
+
+# Authentication testing (optional)
+cryptography>=41.0.0
+python-jose[cryptography]>=3.3.0
+
+# Development and additional testing tools
+coverage>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+
+# Performance testing
+memory-profiler>=0.60.0
