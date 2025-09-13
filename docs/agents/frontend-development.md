@@ -23,9 +23,15 @@ npm run lint                           # ESLint checks
 
 # Database operations (Drizzle ORM)
 npm run db:generate                    # generate Drizzle migrations
-npm run db:migrate                     # apply migrations to database
+npm run db:migrate                     # apply migrations (includes 38 performance indexes)
 npm run db:push                        # push schema changes directly
 npm run db:studio                      # open Drizzle Studio GUI
+npm run db:seed                        # seed database with test data
+
+# Testing
+npm run test                           # run Vitest test suite
+npm run test:coverage                  # run tests with coverage report
+npm run test tests/db-optimization.test.ts  # run database optimization tests
 ```
 
 ## Code Style

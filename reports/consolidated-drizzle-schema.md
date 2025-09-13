@@ -1,8 +1,8 @@
 /**
- * Consolidated Drizzle Schema for MCP Manager
- *
- * This schema unifies the current backend SQLModel and frontend Drizzle schemas
- * while maintaining Better-Auth compatibility and all enterprise features.
+* Consolidated Drizzle Schema for MCP Manager
+*
+* This schema unifies the current backend SQLModel and frontend Drizzle schemas
+* while maintaining Better-Auth compatibility and all enterprise features.
  */
 
 import {
@@ -80,7 +80,7 @@ export const apiKeyScopeEnum = pgEnum("api_key_scope", [
 // ============================================================================
 
 /**
- * User table - Extended for enterprise features while maintaining Better-Auth compatibility
+* User table - Extended for enterprise features while maintaining Better-Auth compatibility
  */
 export const user = pgTable(
   "user",
@@ -118,7 +118,7 @@ export const user = pgTable(
 );
 
 /**
- * Session table - Better-Auth compatible with enterprise extensions
+* Session table - Better-Auth compatible with enterprise extensions
  */
 export const session = pgTable(
   "session",
@@ -147,7 +147,7 @@ export const session = pgTable(
 );
 
 /**
- * Account table - Better-Auth OAuth accounts
+* Account table - Better-Auth OAuth accounts
  */
 export const account = pgTable(
   "account",
@@ -176,7 +176,7 @@ export const account = pgTable(
 );
 
 /**
- * Verification table - Better-Auth email verification
+* Verification table - Better-Auth email verification
  */
 export const verification = pgTable(
   "verification",
@@ -199,7 +199,7 @@ export const verification = pgTable(
 // ============================================================================
 
 /**
- * Tenant table - Multi-tenancy support
+* Tenant table - Multi-tenancy support
  */
 export const tenant = pgTable(
   "tenants",
@@ -219,7 +219,7 @@ export const tenant = pgTable(
 );
 
 /**
- * MCP Server registry
+* MCP Server registry
  */
 export const mcpServer = pgTable(
   "mcp_servers",
@@ -253,7 +253,7 @@ export const mcpServer = pgTable(
 );
 
 /**
- * MCP Server tools registry
+* MCP Server tools registry
  */
 export const serverTool = pgTable(
   "server_tools",
@@ -278,7 +278,7 @@ export const serverTool = pgTable(
 );
 
 /**
- * MCP Server resources registry
+* MCP Server resources registry
  */
 export const serverResource = pgTable(
   "server_resources",
@@ -301,7 +301,7 @@ export const serverResource = pgTable(
 );
 
 /**
- * Server performance metrics over time
+* Server performance metrics over time
  */
 export const serverMetric = pgTable(
   "server_metrics",
@@ -327,7 +327,7 @@ export const serverMetric = pgTable(
 );
 
 /**
- * Enhanced API keys with better security
+* Enhanced API keys with better security
  */
 export const enhancedApiKey = pgTable(
   "enhanced_api_keys",
@@ -370,7 +370,7 @@ export const enhancedApiKey = pgTable(
 );
 
 /**
- * Audit log for tracking system activities
+* Audit log for tracking system activities
  */
 export const auditLog = pgTable(
   "audit_logs",
@@ -405,7 +405,7 @@ export const auditLog = pgTable(
 );
 
 /**
- * Request log for API gateway requests
+* Request log for API gateway requests
  */
 export const requestLog = pgTable(
   "request_logs",
@@ -442,7 +442,7 @@ export const requestLog = pgTable(
 );
 
 /**
- * Circuit breaker state tracking
+* Circuit breaker state tracking
  */
 export const circuitBreaker = pgTable(
   "circuit_breakers",
@@ -473,7 +473,7 @@ export const circuitBreaker = pgTable(
 );
 
 /**
- * System-wide configuration settings
+* System-wide configuration settings
  */
 export const systemConfig = pgTable(
   "system_configs",

@@ -132,6 +132,15 @@ export const mcpServer = pgTable(
     publicIdx: index("mcp_server_public_idx").on(table.isPublic),
     categoryIdx: index("mcp_server_category_idx").on(table.category),
     lastUsedIdx: index("mcp_server_last_used_idx").on(table.lastUsedAt),
+
+    // Performance indexes from backend optimization guide
+    tenantStatusIdx: index("idx_mcp_servers_tenant_status").on(table.tenantId, table.healthStatus),
+    endpointTransportIdx: index("idx_mcp_servers_endpoint_transport").on(table.endpointUrl, table.transportType),
+    healthCheckTimeIdx: index("idx_mcp_servers_health_check_time").on(table.lastHealthCheck),
+    performanceIdx: index("idx_mcp_servers_performance").on(table.avgResponseTime, table.uptime),
+
+    // Composite index for server discovery optimization
+    discoveryCompositeIdx: index("idx_servers_discovery_composite").on(table.healthStatus, table.transportType, table.avgResponseTime),
   }),
 );
 
@@ -183,6 +192,18 @@ export const mcpTool = pgTable(
     nameIdx: index("mcp_tool_name_idx").on(table.name),
     categoryIdx: index("mcp_tool_category_idx").on(table.category),
     activeIdx: index("mcp_tool_active_idx").on(table.isActive),
+
+    // Performance indexes from backend optimization guide
+    nameServerIdx: index("idx_mcp_tools_name_server").on(table.name, table.serverId),
+    usageStatsIdx: index("idx_mcp_tools_usage_stats").on(table.callCount, table.errorCount),
+
+    // Composite index for tool discovery with performance metrics
+    discoveryPerformanceIdx: index("idx_tools_discovery_performance").on(
+      table.name,
+      table.callCount,
+      table.avgExecutionTime,
+      table.serverId,
+    ),
   }),
 );
 
@@ -234,6 +255,9 @@ export const mcpResource = pgTable(
     nameIdx: index("mcp_resource_name_idx").on(table.name),
     mimeTypeIdx: index("mcp_resource_mime_type_idx").on(table.mimeType),
     activeIdx: index("mcp_resource_active_idx").on(table.isActive),
+
+    // Performance indexes from backend optimization guide
+    uriServerIdx: index("idx_mcp_resources_uri_server").on(table.uri, table.serverId),
   }),
 );
 

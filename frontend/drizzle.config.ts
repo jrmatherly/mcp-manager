@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
+import { getSSLConfig } from "./src/db/ssl-config";
 
 export default defineConfig({
   out: "./drizzle",
@@ -7,8 +8,8 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL!,
-    // Configure SSL connection or disable it based on environment variable
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+    // Parse SSL configuration from DATABASE_URL sslmode parameter
+    ssl: getSSLConfig(),
   },
   // Enable introspection for better development experience
   introspect: {

@@ -179,6 +179,59 @@
        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
      }
 
+     /* Fixed sidebar positioning - always visible at edge */
+     .sidebar {
+       position: fixed !important;
+       top: 0 !important;
+       left: 0 !important;
+       width: 300px !important;
+       height: 100vh !important;
+       z-index: 20 !important;
+       transform: none !important;
+     }
+
+     /* Content area - fixed positioning to maximize space */
+     .content {
+       position: fixed !important;
+       left: 300px !important;
+       top: 0 !important;
+       right: 0 !important;
+       bottom: 0 !important;
+       overflow-y: auto !important;
+       margin: 0 !important;
+       padding: 0 !important;
+     }
+
+     /* Disable toggle behavior - sidebar always visible */
+     body.close .sidebar,
+     body.open .sidebar {
+       position: fixed !important;
+       left: 0 !important;
+       transform: none !important;
+     }
+
+     body.close .content,
+     body.open .content {
+       position: fixed !important;
+       left: 300px !important;
+       right: 0 !important;
+       margin: 0 !important;
+     }
+
+     /* Hide toggle button since sidebar is always visible */
+     .sidebar-toggle {
+       display: none !important;
+     }
+
+     /* Sidebar title styling */
+     .app-name-link,
+     .sidebar .app-name a {
+       color: #ffffff !important;
+       font-weight: 700 !important;
+       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+       font-size: 1.125rem !important;
+     }
+
      .sidebar ul li a {
        color: #1f2937 !important;
        border-bottom: none !important;
@@ -191,21 +244,46 @@
      }
 
      .sidebar ul li a:hover {
-       color: var(--primary-blue) !important;
-       background: rgba(59, 130, 246, 0.15);
+       color: #1f2937 !important;
+       background: rgba(255, 255, 255, 0.15);
        backdrop-filter: blur(8px);
        text-decoration: none;
        transform: translateX(4px);
-       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+       border: 1px solid rgba(255, 255, 255, 0.2);
      }
 
      .sidebar ul li.active > a {
-       color: var(--primary-blue) !important;
-       background: rgba(59, 130, 246, 0.2);
-       backdrop-filter: blur(8px);
+       color: #1f2937 !important;
+       background: rgba(255, 255, 255, 0.25);
+       backdrop-filter: blur(12px);
        font-weight: 600;
        border-right: none;
-       box-shadow: inset 3px 0 0 var(--primary-blue), 0 2px 8px rgba(59, 130, 246, 0.3);
+       box-shadow: inset 3px 0 0 var(--primary-blue), 0 2px 8px rgba(59, 130, 246, 0.2);
+       border: 1px solid rgba(255, 255, 255, 0.3);
+     }
+
+     /* Search input styling */
+     .sidebar .search input[type="search"] {
+       background: rgba(255, 255, 255, 0.9) !important;
+       border: 1px solid rgba(0, 0, 0, 0.2) !important;
+       color: #000000 !important;
+       padding: 0.75rem 1rem !important;
+       border-radius: 8px !important;
+       font-size: 0.875rem !important;
+       backdrop-filter: blur(8px);
+       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+     }
+
+     .sidebar .search input[type="search"]::placeholder {
+       color: #6b7280 !important;
+       opacity: 1 !important;
+     }
+
+     .sidebar .search input[type="search"]:focus {
+       outline: none !important;
+       border-color: var(--primary-blue) !important;
+       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
      }
 
      /* Glass navigation bar */
@@ -246,6 +324,8 @@
        padding: 2rem;
        margin: 1rem;
        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+       max-width: none !important;
+       width: calc(100% - 2rem) !important;
      }
 
      /* Enhanced typography */
@@ -255,21 +335,31 @@
      .markdown-section h4,
      .markdown-section h5,
      .markdown-section h6 {
-       color: #1f2937;
+       color: #000000 !important;
        font-weight: 700;
        letter-spacing: -0.025em;
      }
 
      .markdown-section h1 {
-       background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
-       -webkit-background-clip: text;
-       -webkit-text-fill-color: transparent;
-       background-clip: text;
+       color: #1e3a8a !important;
+       background: none !important;
+       -webkit-background-clip: unset !important;
+       -webkit-text-fill-color: unset !important;
+       background-clip: unset !important;
      }
 
      .markdown-section p {
-       color: #4b5563;
+       color: #000000 !important;
        line-height: 1.7;
+     }
+
+     .markdown-section li {
+       color: #000000 !important;
+     }
+
+     .markdown-section strong {
+       color: #111827 !important;
+       font-weight: 600;
      }
 
      .markdown-section code {
@@ -356,6 +446,21 @@
          display: block;
          margin: 0.5rem 0;
        }
+
+       body.close .content,
+       body.open .content {
+         left: 300px !important;
+         right: 0 !important;
+         margin-left: 0 !important;
+       }
+
+       .sidebar {
+         transform: translateX(-300px);
+       }
+
+       .sidebar.open {
+         transform: translateX(0);
+       }
      }
 
      /* Reduced motion support */
@@ -385,6 +490,7 @@
       auto2top: true,
       maxLevel: 4,
       subMaxLevel: 2,
+      hideSidebar: false,
       search: {
         maxAge: 86400000, // Expiration time, the default one day
         paths: 'auto',
@@ -403,6 +509,12 @@
             var url = 'https://github.com/jrmatherly/mcp-manager/blob/main/documentation/' + vm.route.file
             var editHtml = '[:memo: Edit Document](' + url + ')\n'
             return editHtml + html
+          })
+          
+          // Force sidebar to be open by default
+          hook.ready(function() {
+            document.body.classList.remove('close');
+            document.body.classList.add('open');
           })
         }
       ]

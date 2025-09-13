@@ -12,6 +12,63 @@ Key principles:
 - **Test edge cases** - Tests that reveal limitations help improve the code
 - **Document test purpose** - Each test should include a comment explaining why it exists
 
+## Frontend Testing (Vitest/React Testing Library)
+
+### Database Optimization Testing
+
+**Critical Test Suite**: `frontend/tests/db-optimization.test.ts`
+- **38 Index Verification**: Tests all performance indexes exist and are properly configured
+- **3 Function Testing**: Validates database analytics functions (`get_server_health_summary`, `get_request_performance_summary`, `get_tenant_usage_summary`)
+- **3 View Testing**: Confirms monitoring views (`database_size_summary`, `index_usage_summary`, `performance_monitoring`)
+- **Migration Integrity**: Validates migration rollback capabilities
+- **Performance Testing**: Measures query performance improvements
+
+### Test Configuration
+
+**`vitest.config.ts`** - Enhanced for Database Testing:
+```typescript
+export default defineConfig({
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./tests/setup.ts"],
+    testTimeout: 15000,  // Extended for database operations
+    pool: "forks",       // Better compatibility with PostgreSQL
+    poolOptions: {
+      forks: { maxForks: 3, minForks: 1 }
+    }
+  },
+  esbuild: {
+    target: "esnext",
+    supported: { bigint: true }  // BigInt support for PostgreSQL
+  }
+});
+```
+
+### Test Utilities
+
+**Database Test Utilities**: `frontend/tests/utils/db-test-utils.ts`
+- Database connection management with proper cleanup
+- Test data creation and cleanup functions
+- Performance measurement utilities
+- BigInt compatibility helpers for PostgreSQL results
+
+### Running Frontend Tests
+
+```bash
+# Run all tests
+npm run test
+
+# Run database optimization tests specifically
+npm run test tests/db-optimization.test.ts
+
+# Run tests with coverage
+npm run test --coverage
+
+# Run tests in watch mode for development
+npm run test --watch
+```
+
 ## Backend Testing (Python/Pytest)
 
 ### Test File Patterns

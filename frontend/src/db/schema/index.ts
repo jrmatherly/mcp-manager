@@ -25,6 +25,9 @@ export * from "./audit";
 // System administration and configuration
 export * from "./admin";
 
+// Backend compatibility tables
+export * from "./backend-compat";
+
 // Type exports for inference
 import { user, session, account, verification, twoFactorAuth, userPermission } from "./auth";
 import { tenant, tenantMember, tenantInvitation, tenantUsage } from "./tenant";
@@ -39,6 +42,20 @@ import {
   systemAnnouncement,
   announcementAcknowledgment,
 } from "./admin";
+import {
+  sessions,
+  enhancedApiKeys,
+  circuitBreakers,
+  connectionPools,
+  requestQueues,
+  serverAccessControl,
+  performanceAlerts,
+  serverMetrics,
+  dataRetentionPolicies,
+  materializedViews,
+  requestLogs,
+  fastmcpAuditLog,
+} from "./backend-compat";
 
 // Cross-schema relations to avoid circular imports
 export const crossSchemaRelations = relations(user, ({ one }) => ({
@@ -162,6 +179,20 @@ export const schema = {
   maintenanceWindow,
   systemAnnouncement,
   announcementAcknowledgment,
+
+  // Backend compatibility tables
+  sessions,
+  enhancedApiKeys,
+  circuitBreakers,
+  connectionPools,
+  requestQueues,
+  serverAccessControl,
+  performanceAlerts,
+  serverMetrics,
+  dataRetentionPolicies,
+  materializedViews,
+  requestLogs,
+  fastmcpAuditLog,
 
   // Cross-schema relations
   crossSchemaRelations,

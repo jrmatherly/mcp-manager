@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
 
   // Webpack configuration for better compatibility
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+  webpack: (config, { isServer }) => {
     // Fix for postgres and other Node.js modules
     if (!isServer) {
       config.resolve.fallback = {

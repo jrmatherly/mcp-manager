@@ -11,11 +11,14 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
 import { join } from "path";
 import { dbLogger } from "../lib/logger";
+import { getSSLConfig } from "./ssl-config";
 
 // Create connection for migrations
 const migrationPool = new Pool({
   connectionString: process.env.DATABASE_URL!,
   max: 1, // Single connection for migrations
+  // Parse SSL configuration from DATABASE_URL sslmode parameter
+  ssl: getSSLConfig(),
 });
 
 const migrationDb = drizzle(migrationPool);

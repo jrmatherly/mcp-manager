@@ -106,6 +106,55 @@ const eslintConfig = [
       ],
     },
   },
+
+  // Test files overrides
+  {
+    files: [
+      'tests/**/*.test.{js,jsx,ts,tsx}',
+      'tests/**/*.spec.{js,jsx,ts,tsx}',
+      'tests/**/*-utils.{js,jsx,ts,tsx}',
+      'tests/**/utils/**/*.{js,jsx,ts,tsx}',
+      'tests/**/*.{js,jsx,ts,tsx}',
+      '**/__tests__/**/*.{js,jsx,ts,tsx}',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off', // Allow console.log in test files for debugging
+      '@typescript-eslint/no-explicit-any': 'off', // Allow 'any' types in test assertions
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      // Allow more flexible naming for test data
+      '@typescript-eslint/naming-convention': 'off',
+      // Allow require() for dynamic imports in tests
+      '@typescript-eslint/no-require-imports': 'off',
+      // Allow non-null assertions in tests for known test data
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+      // Allow array access on unknown types for database query results
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      // Allow flexible type assertions in tests
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      // Allow case declarations
+      'no-case-declarations': 'off',
+    },
+  },
 ]
 
 export default eslintConfig
