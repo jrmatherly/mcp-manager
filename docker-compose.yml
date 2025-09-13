@@ -1,55 +1,98 @@
-version: "3.8"
+# version removed - obsolete in modern docker-compose
 
 services:
-  # PostgreSQL database
+  #==================================================#
+  #                Postgres                          #
+  #==================================================#
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
-      POSTGRES_DB: mcp_registry
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_POSTGRES_DB}
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Commented out - file doesn't exist
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis cache
+  #==================================================#
+  #                Redis                             #
+  #==================================================#
   redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
+    image: redis:8-alpine
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --tcp-keepalive 300
+    ports:
+      - "${DB_REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
-    ports:
-      - "6379:6379"
+    environment:
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 3
 
   # MCP Registry Gateway - Unified Architecture (Production)
   app:
     build:
       context: .
+      dockerfile: Dockerfile
       target: production
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mcp_registry
-      - REDIS_URL=redis://redis:6379
-      - FASTAPI_ENV=production
-      # Unified Architecture Configuration
-      - MREG_FASTMCP_ENABLED=true
-      - MREG_FASTMCP_HOST=0.0.0.0
-      # Azure OAuth (set these in your production environment)
-      - MREG_AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
-      - MREG_AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
-      - MREG_AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
-      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${OAUTH_CALLBACK_URL:-http://localhost:8000/mcp/oauth/callback}
+      - DATABASE_URL=postgresql://${DB_POSTGRES_USER}:${DB_POSTGRES_PASSWORD}@postgres:${DB_POSTGRES_PORT}/${DB_POSTGRES_DB}
+      - REDIS_URL=redis://${DB_REDIS_PASSWORD:+:}${DB_REDIS_PASSWORD}${DB_REDIS_PASSWORD:+@}redis:${DB_REDIS_PORT}/${DB_REDIS_DB}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DEBUG=${DEBUG:-false}
+      # Pass through all prefixed environment variables
+      - APP_NAME=${APP_NAME}
+      - APP_VERSION=${APP_VERSION}
+      # Database Settings
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=${DB_POSTGRES_PORT}
+      - DB_POSTGRES_USER=${DB_POSTGRES_USER}
+      - DB_POSTGRES_PASSWORD=${DB_POSTGRES_PASSWORD}
+      - DB_POSTGRES_DB=${DB_POSTGRES_DB}
+      - DB_POSTGRES_SSL_MODE=${DB_POSTGRES_SSL_MODE}
+      - DB_REDIS_HOST=redis
+      - DB_REDIS_PORT=${DB_REDIS_PORT}
+      - DB_REDIS_PASSWORD=${DB_REDIS_PASSWORD}
+      - DB_REDIS_DB=${DB_REDIS_DB}
+      - DB_REDIS_SSL=${DB_REDIS_SSL}
+      # Security Settings
+      - SECURITY_JWT_SECRET_KEY=${SECURITY_JWT_SECRET_KEY}
+      - SECURITY_JWT_ALGORITHM=${SECURITY_JWT_ALGORITHM}
+      - SECURITY_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${SECURITY_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+      - SECURITY_AZURE_TENANT_ID=${SECURITY_AZURE_TENANT_ID}
+      - SECURITY_AZURE_CLIENT_ID=${SECURITY_AZURE_CLIENT_ID}
+      - SECURITY_AZURE_CLIENT_SECRET=${SECURITY_AZURE_CLIENT_SECRET}
+      - SECURITY_ENABLE_CORS=${SECURITY_ENABLE_CORS}
+      - SECURITY_CORS_ORIGINS=${SECURITY_CORS_ORIGINS}
+      - SECURITY_CORS_CREDENTIALS=${SECURITY_CORS_CREDENTIALS}
+      # Service Settings
+      - SERVICE_HOST=${SERVICE_HOST}
+      - SERVICE_PORT=${SERVICE_PORT}
+      - SERVICE_WORKERS=${SERVICE_WORKERS}
+      # FastMCP Settings
+      - MREG_FASTMCP_ENABLED=${MREG_FASTMCP_ENABLED}
+      - MREG_FASTMCP_PORT=${MREG_FASTMCP_PORT}
+      - MREG_FASTMCP_HOST=${MREG_FASTMCP_HOST}
+      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${MREG_FASTMCP_OAUTH_CALLBACK_URL}
+      - MREG_AZURE_TENANT_ID=${MREG_AZURE_TENANT_ID}
+      - MREG_AZURE_CLIENT_ID=${MREG_AZURE_CLIENT_ID}
+      - MREG_AZURE_CLIENT_SECRET=${MREG_AZURE_CLIENT_SECRET}
     ports:
       - "8000:8000" # Unified server (REST API + MCP)
     depends_on:
@@ -86,26 +129,57 @@ services:
   app-dev:
     build:
       context: .
+      dockerfile: Dockerfile
       target: development
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mcp_registry
-      - REDIS_URL=redis://redis:6379
-      - FASTAPI_ENV=development
+      - DATABASE_URL=postgresql://${DB_POSTGRES_USER}:${DB_POSTGRES_PASSWORD}@postgres:${DB_POSTGRES_PORT}/${DB_POSTGRES_DB}
+      - REDIS_URL=redis://${DB_REDIS_PASSWORD:+:}${DB_REDIS_PASSWORD}${DB_REDIS_PASSWORD:+@}redis:${DB_REDIS_PORT}/${DB_REDIS_DB}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
       - PYTHONPATH=/app/src
-      # Unified Architecture Configuration
-      - MREG_FASTMCP_ENABLED=true
-      - MREG_FASTMCP_HOST=0.0.0.0
-      # Azure OAuth for development (optional)
-      - MREG_AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
-      - MREG_AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
-      - MREG_AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
-      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${OAUTH_CALLBACK_URL:-http://localhost:8002/mcp/oauth/callback}
+      # Pass through all prefixed environment variables
+      - APP_NAME=${APP_NAME}
+      - APP_VERSION=${APP_VERSION}
+      # Database Settings
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=${DB_POSTGRES_PORT}
+      - DB_POSTGRES_USER=${DB_POSTGRES_USER}
+      - DB_POSTGRES_PASSWORD=${DB_POSTGRES_PASSWORD}
+      - DB_POSTGRES_DB=${DB_POSTGRES_DB}
+      - DB_POSTGRES_SSL_MODE=${DB_POSTGRES_SSL_MODE}
+      - DB_REDIS_HOST=redis
+      - DB_REDIS_PORT=${DB_REDIS_PORT}
+      - DB_REDIS_PASSWORD=${DB_REDIS_PASSWORD}
+      - DB_REDIS_DB=${DB_REDIS_DB}
+      - DB_REDIS_SSL=${DB_REDIS_SSL}
+      # Security Settings
+      - SECURITY_JWT_SECRET_KEY=${SECURITY_JWT_SECRET_KEY}
+      - SECURITY_JWT_ALGORITHM=${SECURITY_JWT_ALGORITHM}
+      - SECURITY_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${SECURITY_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+      - SECURITY_AZURE_TENANT_ID=${SECURITY_AZURE_TENANT_ID}
+      - SECURITY_AZURE_CLIENT_ID=${SECURITY_AZURE_CLIENT_ID}
+      - SECURITY_AZURE_CLIENT_SECRET=${SECURITY_AZURE_CLIENT_SECRET}
+      - SECURITY_ENABLE_CORS=${SECURITY_ENABLE_CORS}
+      - SECURITY_CORS_ORIGINS=${SECURITY_CORS_ORIGINS}
+      - SECURITY_CORS_CREDENTIALS=${SECURITY_CORS_CREDENTIALS}
+      # Service Settings
+      - SERVICE_HOST=${SERVICE_HOST}
+      - SERVICE_PORT=${SERVICE_PORT}
+      - SERVICE_WORKERS=${SERVICE_WORKERS}
+      # FastMCP Settings
+      - MREG_FASTMCP_ENABLED=${MREG_FASTMCP_ENABLED}
+      - MREG_FASTMCP_PORT=${MREG_FASTMCP_PORT}
+      - MREG_FASTMCP_HOST=${MREG_FASTMCP_HOST}
+      - MREG_FASTMCP_OAUTH_CALLBACK_URL=${MREG_FASTMCP_OAUTH_CALLBACK_URL:-http://localhost:8002/mcp/oauth/callback}
+      - MREG_AZURE_TENANT_ID=${MREG_AZURE_TENANT_ID}
+      - MREG_AZURE_CLIENT_ID=${MREG_AZURE_CLIENT_ID}
+      - MREG_AZURE_CLIENT_SECRET=${MREG_AZURE_CLIENT_SECRET}
     ports:
       - "8002:8000" # Unified server (development port)
       - "5678:5678" # Debugger port
     volumes:
-      # Mount source code for development
-      - .:/app
+      # Mount backend source code for development
+      - ./backend:/app
       # Exclude virtual environment (use container's)
       - /app/.venv
     depends_on:
@@ -131,16 +205,16 @@ services:
       watch:
         # Sync source code changes
         - action: sync
-          path: ./src
+          path: ./backend/src
           target: /app/src
         - action: sync
-          path: ./tests
+          path: ./backend/tests
           target: /app/tests
         # Rebuild on dependency changes
         - action: rebuild
-          path: ./pyproject.toml
+          path: ./backend/pyproject.toml
         - action: rebuild
-          path: ./uv.lock
+          path: ./backend/uv.lock
 
 volumes:
   postgres_data:

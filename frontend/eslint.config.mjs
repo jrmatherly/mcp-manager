@@ -3,11 +3,11 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import tseslint from 'typescript-eslint'
 import { FlatCompat } from '@eslint/eslintrc'
-import path from 'path'
+import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = dirname(__filename)
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -15,8 +15,18 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 })
 
-export default tseslint.config([
-  // Global ignores for Next.js
+const eslintConfig = [
+
+  // Base configuration
+  js.configs.recommended,
+
+  // TypeScript configuration
+  ...tseslint.configs.recommended,
+
+  // Next.js configuration (includes React rules)
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+
+  // Global ignores
   {
     ignores: [
       '.next/**',
@@ -24,24 +34,12 @@ export default tseslint.config([
       'dist/**',
       'build/**',
       'node_modules/**',
-      '*.config.js',
-      '*.config.ts',
-      '*.config.mjs',
       'coverage/**',
       '.nyc_output/**',
-      'public/**/*.js', // Generated or third-party scripts
+      'public/**/*.js', // Only generated/third-party scripts
     ],
   },
-  
-  // Base configuration for all files
-  js.configs.recommended,
-  
-  // TypeScript configuration
-  ...tseslint.configs.recommended,
-  
-  // Next.js configuration using FlatCompat
-  ...compat.extends('next/core-web-vitals'),
-  
+
   // React hooks configuration
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
@@ -52,8 +50,8 @@ export default tseslint.config([
       ...reactHooks.configs.recommended.rules,
     },
   },
-  
-  // Language options for browser environment
+
+  // Language options
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
@@ -63,25 +61,20 @@ export default tseslint.config([
         ...globals.browser,
         ...globals.node,
       },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
     },
   },
-  
-  // Additional rules for Next.js projects
+
+  // Custom rules (avoid duplicating Next.js rules)
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     rules: {
-      // TypeScript specific rules
+      // TypeScript specific
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { 
-          argsIgnorePattern: '^_', 
+        {
+          argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          ignoreRestSiblings: true 
+          ignoreRestSiblings: true
         },
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
@@ -91,22 +84,8 @@ export default tseslint.config([
         'error',
         { prefer: 'type-imports', disallowTypeAnnotations: false }
       ],
-      
-      // React specific rules
-      'react/prop-types': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'react/display-name': 'off',
-      'react/jsx-key': 'error',
-      'react/jsx-no-duplicate-props': 'error',
-      'react/jsx-no-undef': 'error',
-      'react/jsx-uses-react': 'off', // Not needed with new JSX transform
-      'react/jsx-uses-vars': 'error',
-      
-      // Next.js specific rules (handled by next/core-web-vitals)
-      '@next/next/no-img-element': 'error',
-      '@next/next/no-page-custom-font': 'error',
-      
-      // General rules
+
+      // General rules (not covered by Next.js)
       'no-console': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
@@ -115,16 +94,18 @@ export default tseslint.config([
       'no-duplicate-imports': 'error',
     },
   },
-  
-  // More lenient rules for scripts directory
+
+  // Scripts directory overrides
   {
     files: ['scripts/**/*.{js,jsx,ts,tsx}'],
     rules: {
-      'no-console': 'off', // Allow console statements in scripts
+      'no-console': 'off',
       '@typescript-eslint/no-unused-vars': [
-        'warn', // Make unused vars warnings instead of errors in scripts
+        'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },
   },
-])
+]
+
+export default eslintConfig

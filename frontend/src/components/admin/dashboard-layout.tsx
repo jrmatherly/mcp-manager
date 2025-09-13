@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,8 +20,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter((segment) => segment);
 
-  const relevantSegments =
-    pathSegments[0] === "admin" ? pathSegments.slice(1) : pathSegments;
+  const relevantSegments = pathSegments[0] === "admin" ? pathSegments.slice(1) : pathSegments;
 
   return (
     <SidebarProvider>
@@ -44,17 +39,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 </BreadcrumbItem>
                 {relevantSegments.length > 0 && <BreadcrumbSeparator />}
                 {relevantSegments.map((segment, index) => {
-                  const href = `/admin/${relevantSegments
-                    .slice(0, index + 1)
-                    .join("/")}`;
+                  const href = `/admin/${relevantSegments.slice(0, index + 1).join("/")}`;
                   const isLast = index === relevantSegments.length - 1;
                   return (
                     <React.Fragment key={href}>
                       <BreadcrumbItem>
                         {isLast ? (
-                          <BreadcrumbPage className="capitalize">
-                            {segment}
-                          </BreadcrumbPage>
+                          <BreadcrumbPage className="capitalize">{segment}</BreadcrumbPage>
                         ) : (
                           <BreadcrumbLink asChild className="capitalize">
                             <Link href={href}>{segment}</Link>

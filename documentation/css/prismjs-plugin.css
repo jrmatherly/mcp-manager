@@ -1,0 +1,24 @@
+/* PrismJS is the syntax highlighter used by docsify for styling code blocks. Styles can be customized by setting --code theme properties listed in the Content section or by using one of the many PrismJS themes available.
+
+To use a PrismJS theme, add a <link> to your index.html after your site theme: */
+
+/* Site theme
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-defaults.min.css">
+*/
+
+/* PrismJS theme
+<link rel="stylesheet" href="path/to/prismjs-theme.css">
+*/
+
+/* Note that only PrismJS theme colors will be applied. Layout and typography styles such as font-family, border-radius, margin and padding will continue to be applied by the site theme to maintain visual consistency.
+
+The theme properties that override PrismJS theme values are:
+
+    --code-font-family
+    --code-font-size
+    --code-font-weight
+    --code-block-border-radius
+    --code-block-line-height
+    --code-block-margin
+    --code-block-padding
+*/

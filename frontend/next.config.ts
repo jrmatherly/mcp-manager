@@ -1,4 +1,4 @@
-import type NextConfig from "next";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
 
   // Webpack configuration for better compatibility
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     // Fix for postgres and other Node.js modules
     if (!isServer) {
       config.resolve.fallback = {

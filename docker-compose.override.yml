@@ -1,18 +1,21 @@
 # Override file for local development
 # This file is automatically loaded by docker-compose and extends docker-compose.yml
 # Add your local customizations here
+#
+# IMPORTANT: This file now uses prefixed environment variables to match
+# the standardized configuration system.
 
-version: "3.8"
+# version removed - obsolete in modern docker-compose
 
 services:
   # Development overrides
   app-dev:
     environment:
-      # Add any local environment variables here
+      # Override any environment variables for local development
       - DEBUG=true
-      - LOG_LEVEL=debug
+      - MONITORING_LOG_LEVEL=debug
     # Uncomment to override the default command
-    # command: ["uv", "run", "uvicorn", "mcp_registry_gateway.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+    # command: ["uv", "run", "mcp-gateway", "serve", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
 
   # Local database overrides (if needed)
   postgres:
@@ -20,8 +23,10 @@ services:
     # ports:
     #   - "5433:5432"
     environment:
-      # Override database settings for local development
-      - POSTGRES_DB=mcp_registry_dev
+      # Override database settings for local development using prefixed variables
+      POSTGRES_DB: mcp_registry_dev
+    # Note: POSTGRES_USER and POSTGRES_PASSWORD are still inherited from main docker-compose.yml
+    # They map to ${DB_POSTGRES_USER} and ${DB_POSTGRES_PASSWORD} from your .env file
 
   # Local Redis overrides (if needed)
   redis:
@@ -29,4 +34,18 @@ services:
     # ports:
     #   - "6380:6379"
     # Add any Redis-specific overrides here if needed
+    # Redis password is handled automatically via ${DB_REDIS_PASSWORD} variable
     environment: []
+
+# Example of how to add local environment variable overrides:
+# You can create additional override files like docker-compose.local.yml
+# and load them with: docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.local.yml up
+
+# Common local overrides you might want to add:
+# services:
+#   app-dev:
+#     environment:
+#       - DB_POSTGRES_HOST=host.docker.internal  # Connect to local PostgreSQL instead of container
+#       - DB_REDIS_HOST=host.docker.internal     # Connect to local Redis instead of container
+#       - SECURITY_JWT_SECRET_KEY=dev-secret-key # Use a specific dev JWT secret
+#       - MONITORING_LOG_LEVEL=debug             # Enable debug logging

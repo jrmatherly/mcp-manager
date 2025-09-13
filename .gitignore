@@ -31,4 +31,5 @@ coverage.xml
 .DS_Store
 Thumbs.db
 
-docs/ARCHIVED_20250910/
+docs/ARCHIVED
+docs/example_frontend_project

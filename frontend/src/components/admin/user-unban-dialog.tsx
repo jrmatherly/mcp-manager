@@ -3,7 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { unbanUser } from "@/utils/auth";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface UserUnbanDialogProps {
@@ -12,11 +12,7 @@ interface UserUnbanDialogProps {
   onClose: () => void;
 }
 
-export function UserUnbanDialog({
-  user,
-  isOpen,
-  onClose,
-}: UserUnbanDialogProps) {
+export function UserUnbanDialog({ user, isOpen, onClose }: UserUnbanDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUnbanUser = async () => {

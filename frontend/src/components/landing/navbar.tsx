@@ -29,13 +29,7 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Image
-                src="/logo.png"
-                alt="Zexa Logo"
-                width={24}
-                height={24}
-                className="h-6 w-6 object-contain"
-              />
+              <Image src="/logo.png" alt="Zexa Logo" width={24} height={24} className="h-6 w-6 object-contain" />
             </div>
             <span className="font-bold text-xl">Zexa Better Auth Starter</span>
           </Link>
@@ -69,10 +63,7 @@ const Navbar = () => {
             <div className="flex items-center gap-3">
               {/* Admin Badge */}
               {isAdmin && (
-                <Badge
-                  variant="secondary"
-                  className="hidden sm:flex items-center gap-1"
-                >
+                <Badge variant="secondary" className="hidden sm:flex items-center gap-1">
                   <Shield className="h-3 w-3" />
                   Admin
                 </Badge>
@@ -81,19 +72,11 @@ const Navbar = () => {
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
-                  >
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={session.user.image || ""}
-                        alt={session.user.name || ""}
-                      />
+                      <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
                       <AvatarFallback className="text-xs">
-                        {session.user.name?.charAt(0)?.toUpperCase() ||
-                          session.user.email?.charAt(0)?.toUpperCase() ||
-                          "U"}
+                        {session.user.name?.charAt(0)?.toUpperCase() || session.user.email?.charAt(0)?.toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -101,13 +84,9 @@ const Navbar = () => {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session.user.name || "User"}
-                      </p>
+                      <p className="text-sm font-medium leading-none">{session.user.name || "User"}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {session.user.email
-                          ? session.user.email.replace(/^[^@]+/, "***")
-                          : ""}
+                        {session.user.email ? session.user.email.replace(/^[^@]+/, "***") : ""}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -131,10 +110,7 @@ const Navbar = () => {
                   )}
 
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut()}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
+                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>

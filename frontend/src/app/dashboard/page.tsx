@@ -1,11 +1,5 @@
 import Navbar from "@/components/landing/navbar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, Mail, Settings, Code } from "lucide-react";
@@ -36,50 +30,29 @@ const DashboardPage = () => {
               <Settings className="h-5 w-5" />
               Quick Actions
             </CardTitle>
-            <CardDescription>
-              Get started with common tasks and explore the template features
-            </CardDescription>
+            <CardDescription>Get started with common tasks and explore the template features</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex-col gap-2"
-                asChild
-              >
+              <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
                 <Link href="/auth/register">
                   <Users className="h-5 w-5" />
                   <span>Create Account</span>
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex-col gap-2"
-                asChild
-              >
+              <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
                 <Link href="/admin">
                   <Shield className="h-5 w-5" />
                   <span>Admin Panel</span>
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex-col gap-2"
-                asChild
-              >
-                <Link
-                  href="https://github.com/zexahq/better-auth-starter"
-                  target="_blank"
-                >
+              <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
+                <Link href="https://github.com/zexahq/better-auth-starter" target="_blank">
                   <Code className="h-5 w-5" />
                   <span>View Source</span>
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex-col gap-2"
-                asChild
-              >
+              <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
                 <Link href="https://docs.zexa.dev" target="_blank">
                   <Mail className="h-5 w-5" />
                   <span>Documentation</span>
@@ -93,10 +66,7 @@ const DashboardPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>Tech Stack</CardTitle>
-            <CardDescription>
-              Built with modern technologies for performance, security, and
-              developer experience
-            </CardDescription>
+            <CardDescription>Built with modern technologies for performance, security, and developer experience</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -113,11 +83,7 @@ const DashboardPage = () => {
         <div className="text-center mt-12 pt-8 border-t border-border/50">
           <p className="text-muted-foreground">
             Built with ❤️ by{" "}
-            <Link
-              href="https://zexa.dev"
-              target="_blank"
-              className="text-primary hover:underline font-medium"
-            >
+            <Link href="https://zexa.dev" target="_blank" className="text-primary hover:underline font-medium">
               Zexa
             </Link>
           </p>

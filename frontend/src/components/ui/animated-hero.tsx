@@ -8,10 +8,7 @@ import Image from "next/image";
 
 function Hero() {
   const [titleNumber, setTitleNumber] = useState(0);
-  const titles = useMemo(
-    () => ["secure", "modern", "production-ready", "scalable", "powerful"],
-    [],
-  );
+  const titles = useMemo(() => ["secure", "modern", "production-ready", "scalable", "powerful"], []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -30,27 +27,15 @@ function Hero() {
         <div className="flex gap-8 py-20 lg:py-40 items-center justify-center flex-col">
           <div>
             <Button variant="secondary" size="sm" className="gap-4" asChild>
-              <a
-                href="https://www.zexa.app"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  src="/logo.png"
-                  alt="Zexa"
-                  width={16}
-                  height={16}
-                  className="w-4 h-4"
-                />
+              <a href="https://www.zexa.app" target="_blank" rel="noopener noreferrer">
+                <Image src="/logo.png" alt="Zexa" width={16} height={16} className="w-4 h-4" />
                 Built by Zexa <MoveRight className="w-4 h-4" />
               </a>
             </Button>
           </div>
           <div className="flex gap-4 flex-col">
             <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular">
-              <span className="text-primary font-medium">
-                Authentication made
-              </span>
+              <span className="text-primary font-medium">Authentication made</span>
               <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
                 &nbsp;
                 {titles.map((title, index) => (
@@ -78,10 +63,8 @@ function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
-              Skip months of authentication setup. Get a complete Next.js
-              boilerplate with Better Auth, admin dashboard, user management,
-              and everything you need to launch your application with
-              enterprise-grade security.
+              Skip months of authentication setup. Get a complete Next.js boilerplate with Better Auth, admin dashboard, user management,
+              and everything you need to launch your application with enterprise-grade security.
             </p>
           </div>
           <div className="flex flex-row gap-3">
@@ -89,11 +72,7 @@ function Hero() {
               <a href="/dashboard">View Demo</a>
             </Button>
             <Button size="lg" className="gap-4" asChild>
-              <a
-                href="https://github.com/zexahq/better-auth-starter"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="https://github.com/zexahq/better-auth-starter" target="_blank" rel="noopener noreferrer">
                 Check GitHub Repo <MoveRight className="w-4 h-4" />
               </a>
             </Button>

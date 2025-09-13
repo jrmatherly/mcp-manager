@@ -6,13 +6,7 @@ import { createUser } from "@/utils/auth";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { Switch } from "@/components/ui/switch";
 
@@ -22,11 +16,7 @@ interface UserAddDialogProps {
   onSuccess?: () => void;
 }
 
-export function UserAddDialog({
-  isOpen,
-  onClose,
-  onSuccess,
-}: UserAddDialogProps) {
+export function UserAddDialog({ isOpen, onClose, onSuccess }: UserAddDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -40,11 +30,7 @@ export function UserAddDialog({
     try {
       setIsLoading(true);
       await createUser(formData);
-      toast.success(
-        formData.autoVerify
-          ? "User created and verified successfully"
-          : "User created successfully. Verification email sent.",
-      );
+      toast.success(formData.autoVerify ? "User created and verified successfully" : "User created successfully. Verification email sent.");
       onSuccess?.();
       onClose();
       // Reset form
@@ -79,9 +65,7 @@ export function UserAddDialog({
           <Input
             id="name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             placeholder="Enter user's name"
             required
           />
@@ -92,9 +76,7 @@ export function UserAddDialog({
             id="email"
             type="email"
             value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
             placeholder="Enter user's email"
             required
           />
@@ -105,21 +87,14 @@ export function UserAddDialog({
             id="password"
             type="password"
             value={formData.password}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, password: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
             placeholder="Enter user's password"
             required
           />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="role">Role</Label>
-          <Select
-            value={formData.role}
-            onValueChange={(value: "user" | "admin") =>
-              setFormData((prev) => ({ ...prev, role: value }))
-            }
-          >
+          <Select value={formData.role} onValueChange={(value: "user" | "admin") => setFormData((prev) => ({ ...prev, role: value }))}>
             <SelectTrigger id="role" className="w-full">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
@@ -136,9 +111,7 @@ export function UserAddDialog({
           <Switch
             id="autoVerify"
             checked={formData.autoVerify}
-            onCheckedChange={(checked: boolean) =>
-              setFormData((prev) => ({ ...prev, autoVerify: checked }))
-            }
+            onCheckedChange={(checked: boolean) => setFormData((prev) => ({ ...prev, autoVerify: checked }))}
           />
         </div>
       </div>

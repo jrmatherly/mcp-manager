@@ -3,7 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { deleteUser } from "@/utils/auth";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface UserDeleteDialogProps {
@@ -12,11 +12,7 @@ interface UserDeleteDialogProps {
   onClose: () => void;
 }
 
-export function UserDeleteDialog({
-  user,
-  isOpen,
-  onClose,
-}: UserDeleteDialogProps) {
+export function UserDeleteDialog({ user, isOpen, onClose }: UserDeleteDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDeleteUser = async () => {

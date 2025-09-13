@@ -6,7 +6,7 @@ authors = [{ name = "Jason Matherly", email = "jason@matherly.net" }]
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10,<3.13"
-keywords = ["mcp", "registry", "gateway", "proxy", "fastapi", "enterprise"]
+keywords = ["mcp", "registry", "gateway", "proxy", "fastmcp", "fastapi", "enterprise"]
 
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -59,7 +59,8 @@ dependencies = [
   "opentelemetry-sdk>=1.21.0",
   # Background tasks and scheduling
   "celery>=5.3.0",
-  "beat>=0.2.0",
+  # Note: beat package has compilation issues in Docker, removed for now
+  # "beat>=0.2.0",
   # Platform-specific optimizations
   "uvloop>=0.19.0; sys_platform != 'win32'", # Better async performance on Unix
   # Utilities
@@ -146,7 +147,7 @@ build-backend = "hatchling.build"
 packages = ["src/mcp_registry_gateway"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/tests", "/docs", "/deployment", "/config", "/README.md", "/pyproject.toml"]
+include = ["/src", "/tests", "/pyproject.toml"]
 
 # Development tools configuration
 # Mypy configuration
@@ -308,7 +309,7 @@ markers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jrmatherly/fastmcp-manager"
-Repository = "https://github.com/jrmatherly/fastmcp-manager"
-Documentation = "https://github.com/jrmatherly/fastmcp-manager/blob/main/README.md"
-Issues = "https://github.com/jrmatherly/fastmcp-manager/issues"
+Homepage = "https://github.com/jrmatherly/mcp-manager"
+Repository = "https://github.com/jrmatherly/mcp-manager"
+Documentation = "https://github.com/jrmatherly/mcp-manager/blob/main/README.md"
+Issues = "https://github.com/jrmatherly/mcp-manager/issues"

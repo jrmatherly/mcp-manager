@@ -1,10 +1,6 @@
 import { authClient } from "@/lib/auth-client";
 
-export async function banUser(
-  userId: string,
-  banReason: string,
-  banExpiresIn?: number,
-) {
+export async function banUser(userId: string, banReason: string, banExpiresIn?: number) {
   const res = await authClient.admin.banUser({
     userId,
     banReason,
@@ -59,7 +55,7 @@ export async function createUser(data: {
   email: string;
   password: string;
   role?: "user" | "admin" | ("user" | "admin")[];
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   autoVerify?: boolean;
 }) {
   const { autoVerify, ...userData } = data;
@@ -86,8 +82,8 @@ export async function createUser(data: {
         email: data.email,
         callbackURL: "/dashboard",
       });
-    } catch (error) {
-      console.error("Failed to send verification email:", error);
+    } catch {
+      // Failed to send verification email - non-fatal error
       // Don't throw here as user was created successfully
     }
   }

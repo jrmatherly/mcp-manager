@@ -1,47 +1,20 @@
 "use client";
-import {
-  CheckCircle,
-  XCircle,
-  Mail,
-  Ban,
-  Check,
-  Search,
-  Users,
-  Shield,
-  User,
-  UserPlus,
-} from "lucide-react";
+import { CheckCircle, XCircle, Mail, Ban, Check, Search, Users, Shield, User, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import useSWR from "swr";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { GithubIcon, GoogleIcon } from "../ui/icons";
 import { UserActions } from "./user-actions";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -94,9 +67,15 @@ export function UsersTable() {
   // Update URL when filters/sort/page change
   useEffect(() => {
     const params = new URLSearchParams();
-    if (role && role !== "all") params.set("role", role);
-    if (debouncedEmail) params.set("email", debouncedEmail);
-    if (page) params.set("page", String(page));
+    if (role && role !== "all") {
+      params.set("role", role);
+    }
+    if (debouncedEmail) {
+      params.set("email", debouncedEmail);
+    }
+    if (page) {
+      params.set("page", String(page));
+    }
     params.set("limit", String(limit));
     router.replace(`?${params.toString()}`);
   }, [role, debouncedEmail, page, router]);
@@ -104,8 +83,12 @@ export function UsersTable() {
   // Build SWR key with all params
   const swrKey = useMemo(() => {
     const params = new URLSearchParams();
-    if (role && role !== "all") params.set("role", role);
-    if (debouncedEmail) params.set("email", debouncedEmail);
+    if (role && role !== "all") {
+      params.set("role", role);
+    }
+    if (debouncedEmail) {
+      params.set("email", debouncedEmail);
+    }
     params.set("page", String(page));
     params.set("limit", String(limit));
     return `/api/admin/users?${params.toString()}`;
@@ -155,9 +138,7 @@ export function UsersTable() {
               ) : (
                 <User className="w-4 h-4" />
               )}
-              {role === "all"
-                ? "All Roles"
-                : role.charAt(0).toUpperCase() + role.slice(1)}
+              {role === "all" ? "All Roles" : role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
           </SelectTrigger>
           <SelectContent>
@@ -192,8 +173,10 @@ export function UsersTable() {
     </div>
   );
 
-  if (error) return <div>Failed to load users</div>;
-  if (!data)
+  if (error) {
+    return <div>Failed to load users</div>;
+  }
+  if (!data) {
     return (
       <div className="space-y-4 border-accent-foreground">
         {filterControls}
@@ -213,12 +196,7 @@ export function UsersTable() {
                 ].map((col) => (
                   <TableHead
                     key={col.label}
-                    className={[
-                      col.className,
-                      "px-4 py-3 text-xs font-medium text-muted-foreground",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
+                    className={[col.className, "px-4 py-3 text-xs font-medium text-muted-foreground"].filter(Boolean).join(" ")}
                   >
                     {col.label}
                   </TableHead>
@@ -266,12 +244,15 @@ export function UsersTable() {
         </div>
       </div>
     );
+  }
 
   const { users, total, totalPages } = data;
 
   // Pagination logic for shadcn/ui Pagination
   const renderPagination = () => {
-    if (totalPages <= 1) return null;
+    if (totalPages <= 1) {
+      return null;
+    }
     const pageNumbers = [];
     const maxPagesToShow = 5;
     let startPage = Math.max(1, page - 2);
@@ -307,10 +288,7 @@ export function UsersTable() {
           )}
           {pageNumbers.map((pNum) => (
             <PaginationItem key={pNum}>
-              <PaginationLink
-                isActive={pNum === page}
-                onClick={() => setPage(pNum)}
-              >
+              <PaginationLink isActive={pNum === page} onClick={() => setPage(pNum)}>
                 {pNum}
               </PaginationLink>
             </PaginationItem>
@@ -319,9 +297,7 @@ export function UsersTable() {
             <>
               {endPage < totalPages - 1 && <PaginationEllipsis />}
               <PaginationItem>
-                <PaginationLink onClick={() => setPage(totalPages)}>
-                  {totalPages}
-                </PaginationLink>
+                <PaginationLink onClick={() => setPage(totalPages)}>{totalPages}</PaginationLink>
               </PaginationItem>
             </>
           )}
@@ -330,9 +306,7 @@ export function UsersTable() {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               aria-disabled={page === totalPages}
               tabIndex={page === totalPages ? -1 : 0}
-              className={
-                page === totalPages ? "pointer-events-none opacity-50" : ""
-              }
+              className={page === totalPages ? "pointer-events-none opacity-50" : ""}
             />
           </PaginationItem>
         </PaginationContent>
@@ -359,12 +333,7 @@ export function UsersTable() {
               ].map((col) => (
                 <TableHead
                   key={col.label}
-                  className={[
-                    col.className,
-                    "px-4 py-3 text-xs font-medium text-muted-foreground",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+                  className={[col.className, "px-4 py-3 text-xs font-medium text-muted-foreground"].filter(Boolean).join(" ")}
                 >
                   {col.label}
                 </TableHead>
@@ -414,18 +383,12 @@ export function UsersTable() {
                       <div className="flex items-center gap-4">
                         <Avatar>
                           <AvatarImage src={user.avatarUrl} alt={user.name} />
-                          <AvatarFallback className="text-xs">
-                            {user.name.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
+                          <AvatarFallback className="text-xs">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-foreground">
-                            {user.name}
-                          </span>
+                          <span className="text-sm font-medium text-foreground">{user.name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {user.email.replace(/^[^@]+/, (match) =>
-                              "*".repeat(match.length),
-                            )}
+                            {user.email.replace(/^[^@]+/, (match) => "*".repeat(match.length))}
                           </span>
                         </div>
                       </div>
@@ -471,15 +434,8 @@ export function UsersTable() {
                             : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700"
                         }`}
                       >
-                        {user.role === "admin" ? (
-                          <Shield className="h-3 w-3" />
-                        ) : (
-                          <User className="h-3 w-3" />
-                        )}
-                        {user.role
-                          ? user.role.charAt(0).toUpperCase() +
-                            user.role.slice(1)
-                          : "User"}
+                        {user.role === "admin" ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+                        {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"}
                       </Badge>
                     </TableCell>
                     <TableCell className="px-4 py-3">
@@ -487,24 +443,15 @@ export function UsersTable() {
                         <div className="flex flex-col gap-1">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Badge
-                                variant="destructive"
-                                className="flex items-center gap-1 px-2 py-1 text-xs cursor-help"
-                              >
+                              <Badge variant="destructive" className="flex items-center gap-1 px-2 py-1 text-xs cursor-help">
                                 <Ban className="h-3 w-3" />
                                 Banned
                               </Badge>
                             </TooltipTrigger>
-                            {user.banReason && (
-                              <TooltipContent>
-                                Reason: {user.banReason}
-                              </TooltipContent>
-                            )}
+                            {user.banReason && <TooltipContent>Reason: {user.banReason}</TooltipContent>}
                           </Tooltip>
                           {user.banExpires && (
-                            <span className="text-xs text-muted-foreground">
-                              Expires: {format(user.banExpires, "MMM d, yyyy")}
-                            </span>
+                            <span className="text-xs text-muted-foreground">Expires: {format(user.banExpires, "MMM d, yyyy")}</span>
                           )}
                         </div>
                       ) : (
@@ -518,18 +465,13 @@ export function UsersTable() {
                       )}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-xs text-muted-foreground">
-                      {user.lastSignIn
-                        ? format(user.lastSignIn, "MMM d, yyyy 'at' h:mm a")
-                        : "Never"}
+                      {user.lastSignIn ? format(user.lastSignIn, "MMM d, yyyy 'at' h:mm a") : "Never"}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-xs text-muted-foreground">
                       {format(user.createdAt, "MMM d, yyyy 'at' h:mm a")}
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                      <UserActions
-                        user={user}
-                        onActionComplete={handleActionComplete}
-                      />
+                      <UserActions user={user} onActionComplete={handleActionComplete} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -542,11 +484,7 @@ export function UsersTable() {
         </div>
         {renderPagination()}
       </div>
-      <UserAddDialog
-        isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
-        onSuccess={() => mutate()}
-      />
+      <UserAddDialog isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} onSuccess={() => mutate()} />
     </div>
   );
 }

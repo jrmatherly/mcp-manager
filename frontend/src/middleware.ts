@@ -1,7 +1,7 @@
 import { isPublicPath } from "@/lib/public-paths";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/config";
 import { getSessionCookie } from "better-auth/cookies";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

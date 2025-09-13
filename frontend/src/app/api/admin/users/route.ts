@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getUsers } from "@/utils/users";
 
 export async function GET(request: NextRequest) {
@@ -36,11 +36,8 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil(total / limit),
     });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch users" },
-      { status: 500 },
-    );
+  } catch {
+    // Error logging removed for production
+    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
   }
 }

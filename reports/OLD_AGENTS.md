@@ -692,7 +692,7 @@ uv run mcp-gateway optimize-db              # Database performance optimization
 - **Health Check**: http://localhost:8000/health (unified server health)
 - **OAuth Login**: http://localhost:8000/mcp/oauth/login (Azure OAuth flow)
 - **Prometheus Metrics**: http://localhost:8000/metrics (Priority 1 monitoring)
-- **GitHub**: https://github.com/jrmatherly/fastmcp-manager
+- **GitHub**: https://github.com/jrmatherly/mcp-manager
 
 ### **Key Files to Know**
 - `pyproject.toml` - All project configuration, dependencies, and CLI entry points  

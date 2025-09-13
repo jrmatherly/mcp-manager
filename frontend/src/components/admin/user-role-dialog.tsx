@@ -4,15 +4,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { updateUserRole } from "@/utils/auth";
 import { Label } from "@/components/ui/label";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserRoleDialogProps {
   user: UserWithDetails;
@@ -62,11 +56,7 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
             </SelectTrigger>
             <SelectContent>
               {ROLE_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className="hover:bg-muted"
-                >
+                <SelectItem key={option.value} value={option.value} className="hover:bg-muted">
                   {option.label}
                 </SelectItem>
               ))}

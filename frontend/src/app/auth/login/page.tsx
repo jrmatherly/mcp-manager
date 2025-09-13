@@ -23,9 +23,7 @@ const LoginPage = () => {
             <LoginForm />
             <div className="flex items-center my-2">
               <div className="flex-1 h-px bg-muted-foreground/30" />
-              <span className="mx-3 text-muted-foreground text-xs font-medium">
-                OR
-              </span>
+              <span className="mx-3 text-muted-foreground text-xs font-medium">OR</span>
               <div className="flex-1 h-px bg-muted-foreground/30" />
             </div>
             <div className="flex flex-row gap-2 w-full">
@@ -50,10 +48,7 @@ const LoginPage = () => {
             </div>
             <div className="text-center text-sm mt-4">
               Not registered?{" "}
-              <Link
-                href="/auth/register"
-                className="text-primary underline hover:no-underline font-medium"
-              >
+              <Link href="/auth/register" className="text-primary underline hover:no-underline font-medium">
                 Create an account
               </Link>
             </div>

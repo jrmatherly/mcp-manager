@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  #==================================================#
+  #                Docsify                           #
+  #==================================================#
+  docsify:
+    image: mcp-manager/docsify:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-manager-docs
+    ports:
+      - "13050:3000"
+    volumes:
+      - .:/docs:ro
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - docs-network
+
+networks:
+  docs-network:
+    driver: bridge

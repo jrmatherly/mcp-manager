@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
-import { ActionResult } from "@/lib/schemas";
+import type { ActionResult } from "@/lib/schemas";
 
 export async function loginUser({
   email,

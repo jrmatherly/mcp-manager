@@ -107,6 +107,7 @@ VITE_ENVIRONMENT=${ENVIRONMENT}                  # ← References backend enviro
 ## ⚙️ **Configuration Categories**
 
 ### **Backend Configuration**
+
 | Prefix | Purpose | Example Variables |
 |--------|---------|-------------------|
 | `APP_*` | Main application | `APP_NAME`, `APP_VERSION` |
@@ -117,6 +118,7 @@ VITE_ENVIRONMENT=${ENVIRONMENT}                  # ← References backend enviro
 | `MREG_*` | FastMCP settings | `MREG_AZURE_CLIENT_ID`, `MREG_FASTMCP_ENABLED` |
 
 ### **Frontend Configuration**
+
 | Variable | Purpose | Source |
 |----------|---------|--------|
 | `VITE_API_BASE_URL` | Backend API endpoint | Static value |

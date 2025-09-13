@@ -20,9 +20,36 @@
 # production
 /build
 
-# misc
+# OS generated files
 .DS_Store
-*.pem
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker volumes and data
+docker-data/
+.docker/
+
+# Database files (if using local SQLite)
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary files
+*.tmp
+*.temp
+
+# SSL Certificates (keep .gitkeep)
+certs/*.crt
+certs/*.key
+certs/*.pem
+certs/*.p12
+certs/*.pfx
 
 # debug
 npm-debug.log*
@@ -39,3 +66,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ESLint cache
+.eslintcache

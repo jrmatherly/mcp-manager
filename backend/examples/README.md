@@ -12,7 +12,7 @@ This directory contains examples demonstrating the MCP Registry Gateway function
 2. **Start the gateway**:
    ```bash
    # From project root
-   uv run mcp-gateway serve --port 8001
+   uv run mcp-gateway serve --port 8000
    ```
 
 3. **Run the demo** (in another terminal):

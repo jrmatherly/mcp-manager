@@ -38,56 +38,27 @@ const RegisterForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex w-full flex-col gap-5"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-5">
       <FormSuccess message={formState.success || ""} />
       <FormError message={formState.error || ""} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="name">Name</Label>
-        <Input
-          id="name"
-          type="text"
-          placeholder="Your name"
-          autoComplete="name"
-          {...register("name")}
-        />
-        {errors.name && (
-          <span className="text-xs text-red-500">{errors.name.message}</span>
-        )}
+        <Input id="name" type="text" placeholder="Your name" autoComplete="name" {...register("name")} />
+        {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
-          {...register("email")}
-        />
-        {errors.email && (
-          <span className="text-xs text-red-500">{errors.email.message}</span>
-        )}
+        <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" {...register("email")} />
+        {errors.email && <span className="text-xs text-red-500">{errors.email.message}</span>}
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">Password</Label>
         <Controller
           name="password"
           control={control}
-          render={({ field }) => (
-            <PasswordInput
-              value={field.value}
-              onChange={field.onChange}
-              id="password"
-            />
-          )}
+          render={({ field }) => <PasswordInput value={field.value} onChange={field.onChange} id="password" />}
         />
-        {errors.password && (
-          <span className="text-xs text-red-500">
-            {errors.password.message}
-          </span>
-        )}
+        {errors.password && <span className="text-xs text-red-500">{errors.password.message}</span>}
       </div>
       <Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
         {isSubmitting ? "Registering..." : "Register"}

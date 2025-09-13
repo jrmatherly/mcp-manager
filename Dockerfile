@@ -1,5 +1,5 @@
 # Multi-stage build for optimal caching and smaller final image
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS builder
 
 # Set working directory
 WORKDIR /app
@@ -9,15 +9,16 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # Copy dependency files first for better layer caching
-COPY uv.lock pyproject.toml ./
+COPY backend/uv.lock backend/pyproject.toml ./
 
 # Install dependencies only (not the project itself)
 # This creates a separate layer that can be cached when only source code changes
 RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync --locked --no-install-project
 
-# Copy the entire project
-COPY . .
+# Copy the backend project and README
+COPY backend/ .
+COPY README.md .
 
 # Install the project itself
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -37,8 +38,8 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 # Copy only necessary application files
-COPY --chown=app:app src/ ./src/
-COPY --chown=app:app pyproject.toml ./
+COPY --from=builder --chown=app:app /app/src/ ./src/
+COPY --from=builder --chown=app:app /app/pyproject.toml ./
 
 # Make sure the virtual environment is in PATH
 ENV PATH="/app/.venv/bin:$PATH"
@@ -65,7 +66,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Set environment for development
 ENV PYTHONPATH=/app/src
-ENV FASTAPI_ENV=development
+ENV ENVIRONMENT=development
 
 # Create non-root user for development
 RUN groupadd --gid 1000 app && \
@@ -81,4 +82,4 @@ USER app
 EXPOSE 8000 5678
 
 # Development command with auto-reload
-CMD ["uv", "run", "uvicorn", "mcp_registry_gateway.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uv", "run", "mcp-gateway", "serve", "--host", "0.0.0.0", "--port", "8000", "--reload"]

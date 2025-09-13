@@ -405,7 +405,7 @@ MREG_SECURITY_ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend.com
 - [Middleware Configuration](https://docs.fastmcp.com/middleware)
 
 ### Support
-- GitHub Issues: https://github.com/jrmatherly/fastmcp-manager/issues
+- GitHub Issues: https://github.com/jrmatherly/mcp-manager/issues
 - FastMCP Discord: https://discord.gg/fastmcp
 - Azure Support: https://azure.microsoft.com/support/
 

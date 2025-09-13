@@ -52,24 +52,13 @@ const LoginForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex w-full flex-col gap-5"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-5">
       <FormSuccess message={formState.success || ""} />
       <FormError message={formState.error || ""} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
-          {...register("email")}
-        />
-        {errors.email && (
-          <span className="text-xs text-red-500">{errors.email.message}</span>
-        )}
+        <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" {...register("email")} />
+        {errors.email && <span className="text-xs text-red-500">{errors.email.message}</span>}
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor={id}>Password</Label>
@@ -90,18 +79,10 @@ const LoginForm = () => {
             aria-pressed={isVisible}
             aria-controls="password"
           >
-            {isVisible ? (
-              <EyeOffIcon size={16} aria-hidden="true" />
-            ) : (
-              <EyeIcon size={16} aria-hidden="true" />
-            )}
+            {isVisible ? <EyeOffIcon size={16} aria-hidden="true" /> : <EyeIcon size={16} aria-hidden="true" />}
           </button>
         </div>
-        {errors.password && (
-          <span className="text-xs text-red-500">
-            {errors.password.message}
-          </span>
-        )}
+        {errors.password && <span className="text-xs text-red-500">{errors.password.message}</span>}
       </div>
       <Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
         {isSubmitting ? "Logging in..." : "Login"}

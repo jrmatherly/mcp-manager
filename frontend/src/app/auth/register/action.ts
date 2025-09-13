@@ -2,19 +2,16 @@
 
 import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
-import { ActionResult } from "@/lib/schemas";
-import { registerSchema, RegisterSchema } from "@/lib/schemas";
+import { registerSchema, type RegisterSchema, type ActionResult } from "@/lib/schemas";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/config";
 
-export async function registerUser(
-  formData: RegisterSchema,
-): Promise<ActionResult> {
+export async function registerUser(formData: RegisterSchema): Promise<ActionResult> {
   const parsed = registerSchema.safeParse(formData);
 
   if (!parsed.success) {
     return {
       success: null,
-      error: { reason: parsed.error.errors[0]?.message || "Invalid input" },
+      error: { reason: parsed.error.issues[0]?.message || "Invalid input" },
     };
   }
 
@@ -32,8 +29,7 @@ export async function registerUser(
 
     return {
       success: {
-        reason:
-          "Registration successful! Check your email to confirm your account.",
+        reason: "Registration successful! Check your email to confirm your account.",
       },
       error: null,
       data: { user: { id: user.id, email: user.email } },

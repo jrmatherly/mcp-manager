@@ -835,7 +835,7 @@ class DatabasePerformanceMigration:
         print("🎉 MCP Registry Gateway Database Optimization Complete!")
         print(
             # TODO: update to prod repo, or use env vars
-            "📚 For more information, visit: https://github.com/jrmatherly/fastmcp-manager"
+            "📚 For more information, visit: https://github.com/jrmatherly/mcp-manager"
         )
         print("=" * 80 + "\n")
 

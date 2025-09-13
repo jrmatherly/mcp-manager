@@ -23,37 +23,22 @@ const RegisterPage = () => {
             <RegisterForm />
             <div className="flex items-center my-2">
               <div className="flex-1 h-px bg-muted-foreground/30" />
-              <span className="mx-3 text-muted-foreground text-xs font-medium">
-                OR
-              </span>
+              <span className="mx-3 text-muted-foreground text-xs font-medium">OR</span>
               <div className="flex-1 h-px bg-muted-foreground/30" />
             </div>
             <div className="flex flex-row gap-2 w-full">
-              <Button
-                variant="outline"
-                className="w-1/2 flex items-center justify-center"
-                type="button"
-                onClick={signInWithGoogle}
-              >
+              <Button variant="outline" className="w-1/2 flex items-center justify-center" type="button" onClick={signInWithGoogle}>
                 <GoogleIcon className="mr-2" />
                 Google
               </Button>
-              <Button
-                variant="outline"
-                className="w-1/2 flex items-center justify-center"
-                type="button"
-                onClick={signInWithGithub}
-              >
+              <Button variant="outline" className="w-1/2 flex items-center justify-center" type="button" onClick={signInWithGithub}>
                 <GithubIcon className="mr-2" />
                 GitHub
               </Button>
             </div>
             <div className="text-center text-sm mt-4">
               Already have an account?{" "}
-              <Link
-                href="/auth/login"
-                className="text-primary underline hover:no-underline font-medium"
-              >
+              <Link href="/auth/login" className="text-primary underline hover:no-underline font-medium">
                 Login
               </Link>
             </div>

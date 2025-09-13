@@ -1,6 +1,8 @@
 import { db } from "@/db";
+import { session } from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { desc } from "drizzle-orm";
 
 export interface UserWithDetails {
   id: string;
@@ -28,18 +30,20 @@ export interface GetUsersOptions {
   name?: string;
 }
 
-export async function getUsers(
-  options: GetUsersOptions = {},
-): Promise<{ users: UserWithDetails[]; total: number }> {
+export async function getUsers(options: GetUsersOptions = {}): Promise<{ users: UserWithDetails[]; total: number }> {
   // Build query for Better Auth
-  const query: Record<string, any> = {
+  const query: Record<string, unknown> = {
     limit: options.limit ?? 10,
     offset: options.offset ?? 0,
   };
 
   // Sorting
-  if (options.sortBy) query.sortBy = options.sortBy;
-  if (options.sortDirection) query.sortDirection = options.sortDirection;
+  if (options.sortBy) {
+    query.sortBy = options.sortBy;
+  }
+  if (options.sortDirection) {
+    query.sortDirection = options.sortDirection;
+  }
 
   // Filtering by role
   if (options.role) {
@@ -93,31 +97,25 @@ export async function getUsers(
       userId: true,
       createdAt: true,
     },
-    orderBy: (session) => [session.createdAt],
+    orderBy: [desc(session.createdAt)],
   });
 
   // Group accounts by user ID
-  const accountsByUser = accountsQuery.reduce(
-    (acc, account) => {
-      if (!acc[account.userId]) {
-        acc[account.userId] = [];
-      }
-      acc[account.userId].push(account.providerId);
-      return acc;
-    },
-    {} as Record<string, string[]>,
-  );
+  const accountsByUser = accountsQuery.reduce((acc: Record<string, string[]>, account) => {
+    if (!acc[account.userId]) {
+      acc[account.userId] = [];
+    }
+    acc[account.userId].push(account.providerId);
+    return acc;
+  }, {} as Record<string, string[]>);
 
   // Get last sign in date by user ID
-  const lastSignInByUser = sessionsQuery.reduce(
-    (acc, session) => {
-      if (!acc[session.userId] || session.createdAt > acc[session.userId]) {
-        acc[session.userId] = session.createdAt;
-      }
-      return acc;
-    },
-    {} as Record<string, Date>,
-  );
+  const lastSignInByUser = sessionsQuery.reduce((acc: Record<string, Date>, session) => {
+    if (!acc[session.userId] || session.createdAt > acc[session.userId]) {
+      acc[session.userId] = session.createdAt;
+    }
+    return acc;
+  }, {} as Record<string, Date>);
 
   // Transform the raw data into the format expected by the UsersTable component
   const users: UserWithDetails[] = result.users.map((user) => {

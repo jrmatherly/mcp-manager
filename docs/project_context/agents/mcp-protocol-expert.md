@@ -94,7 +94,7 @@ class MCPCompliantServer:
                 "version": "1.0.0",
                 "description": "Enterprise MCP Registry, Gateway, and Proxy System",
                 "authors": ["MCP Registry Gateway Team"],
-                "homepage": "https://github.com/jrmatherly/fastmcp-manager",
+                "homepage": "https://github.com/jrmatherly/mcp-manager",
                 "license": "MIT"
             }
         }

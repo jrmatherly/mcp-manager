@@ -13,9 +13,16 @@ from pydantic.types import SecretStr
 from pydantic_settings import BaseSettings
 
 
-# Path to project root (3 levels up from this file: core/config.py -> src/pkg/ -> src/ -> project_root/)
-PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
-ENV_FILE = PROJECT_ROOT / ".env"
+# Path to backend root (3 levels up from this file: core/config.py -> src/pkg/ -> src/ -> backend/)
+# Then up one more level to get to project root if needed
+BACKEND_ROOT = Path(__file__).parent.parent.parent.parent
+PROJECT_ROOT = BACKEND_ROOT.parent
+
+# Try backend .env first, then fall back to root .env
+if (BACKEND_ROOT / ".env").exists():
+    ENV_FILE = BACKEND_ROOT / ".env"
+else:
+    ENV_FILE = PROJECT_ROOT / ".env"
 
 
 class DatabaseSettings(BaseSettings):

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { UserBanDialog } from "./user-ban-dialog";
 import { UserUnbanDialog } from "./user-unban-dialog";
 import { UserDeleteDialog } from "./user-delete-dialog";
@@ -27,14 +27,11 @@ export function UserActions({ user, onActionComplete }: UserActionsProps) {
   const [showBanDialog, setShowBanDialog] = useState(false);
   const [showUnbanDialog, setShowUnbanDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showRevokeSessionsDialog, setShowRevokeSessionsDialog] =
-    useState(false);
+  const [showRevokeSessionsDialog, setShowRevokeSessionsDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const handleDialogClose = (
-    setter: React.Dispatch<React.SetStateAction<boolean>>,
-  ) => {
+  const handleDialogClose = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     setter(false);
   };
 
@@ -48,9 +45,7 @@ export function UserActions({ user, onActionComplete }: UserActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="text-sm">
-          <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-            Actions
-          </DropdownMenuLabel>
+          <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Actions</DropdownMenuLabel>
           <DropdownMenuItem
             className="text-xs"
             onClick={() => {

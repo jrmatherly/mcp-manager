@@ -4,16 +4,10 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { banUser } from "@/utils/auth";
 import { Label } from "@/components/ui/label";
-import { UserWithDetails } from "@/utils/users";
+import type { UserWithDetails } from "@/utils/users";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserBanDialogProps {
   user: UserWithDetails;
@@ -88,11 +82,7 @@ export function UserBanDialog({ user, isOpen, onClose }: UserBanDialogProps) {
             </SelectTrigger>
             <SelectContent>
               {BAN_DURATIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className="hover:bg-muted"
-                >
+                <SelectItem key={option.value} value={option.value} className="hover:bg-muted">
                   {option.label}
                 </SelectItem>
               ))}

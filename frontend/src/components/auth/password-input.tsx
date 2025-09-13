@@ -11,11 +11,7 @@ export type PasswordInputProps = {
   id?: string;
 };
 
-export default function PasswordInput({
-  value,
-  onChange,
-  id: idProp,
-}: PasswordInputProps) {
+export default function PasswordInput({ value, onChange, id: idProp }: PasswordInputProps) {
   const id = useId();
   const inputId = idProp || id;
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -43,17 +39,31 @@ export default function PasswordInput({
   }, [strength]);
 
   const getStrengthColor = (score: number) => {
-    if (score === 0) return "bg-border";
-    if (score <= 1) return "bg-red-500";
-    if (score <= 2) return "bg-orange-500";
-    if (score === 3) return "bg-amber-500";
+    if (score === 0) {
+      return "bg-border";
+    }
+    if (score <= 1) {
+      return "bg-red-500";
+    }
+    if (score <= 2) {
+      return "bg-orange-500";
+    }
+    if (score === 3) {
+      return "bg-amber-500";
+    }
     return "bg-emerald-500";
   };
 
   const getStrengthText = (score: number) => {
-    if (score === 0) return "Enter a password";
-    if (score <= 2) return "Weak password";
-    if (score === 3) return "Medium password";
+    if (score === 0) {
+      return "Enter a password";
+    }
+    if (score <= 2) {
+      return "Weak password";
+    }
+    if (score === 3) {
+      return "Medium password";
+    }
     return "Strong password";
   };
 
@@ -82,11 +92,7 @@ export default function PasswordInput({
             aria-pressed={isVisible}
             aria-controls="password"
           >
-            {isVisible ? (
-              <EyeOffIcon size={16} aria-hidden="true" />
-            ) : (
-              <EyeIcon size={16} aria-hidden="true" />
-            )}
+            {isVisible ? <EyeOffIcon size={16} aria-hidden="true" /> : <EyeIcon size={16} aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -103,18 +109,13 @@ export default function PasswordInput({
             aria-label="Password strength"
           >
             <div
-              className={`h-full ${getStrengthColor(
-                strengthScore
-              )} transition-all duration-500 ease-out`}
+              className={`h-full ${getStrengthColor(strengthScore)} transition-all duration-500 ease-out`}
               style={{ width: `${(strengthScore / 4) * 100}%` }}
             ></div>
           </div>
 
           {/* Password strength description */}
-          <p
-            id={`${id}-description`}
-            className="text-foreground mb-2 text-sm font-medium"
-          >
+          <p id={`${id}-description`} className="text-foreground mb-2 text-sm font-medium">
             {getStrengthText(strengthScore)}. Must contain:
           </p>
 
@@ -123,27 +124,13 @@ export default function PasswordInput({
             {strength.map((req, index) => (
               <li key={index} className="flex items-center gap-2">
                 {req.met ? (
-                  <CheckIcon
-                    size={16}
-                    className="text-emerald-500"
-                    aria-hidden="true"
-                  />
+                  <CheckIcon size={16} className="text-emerald-500" aria-hidden="true" />
                 ) : (
-                  <XIcon
-                    size={16}
-                    className="text-muted-foreground/80"
-                    aria-hidden="true"
-                  />
+                  <XIcon size={16} className="text-muted-foreground/80" aria-hidden="true" />
                 )}
-                <span
-                  className={`text-xs ${
-                    req.met ? "text-emerald-600" : "text-muted-foreground"
-                  }`}
-                >
+                <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
                   {req.text}
-                  <span className="sr-only">
-                    {req.met ? " - Requirement met" : " - Requirement not met"}
-                  </span>
+                  <span className="sr-only">{req.met ? " - Requirement met" : " - Requirement not met"}</span>
                 </span>
               </li>
             ))}
