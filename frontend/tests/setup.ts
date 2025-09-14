@@ -75,11 +75,4 @@ afterAll(() => {
   server.close();
 });
 
-// Global test utilities - extend Vitest's expect interface
-declare module "vitest" {
-  interface Assertion {
-    toBeInTheDocument(): void;
-    toHaveClass(className: string): void;
-    toHaveAttribute(attr: string, value?: string): void;
-  }
-}
+// Type declarations for Vitest are now in vitest.d.ts

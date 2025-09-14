@@ -128,14 +128,16 @@ REDIS_URL=redis://localhost:6379
 BETTER_AUTH_SECRET=your-better-auth-secret-here
 BETTER_AUTH_URL=http://localhost:3000
 
-# OAuth Providers (optional)
+# OAuth Providers (optional - supports multiple providers simultaneously)
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Microsoft/Azure SSO (Enterprise SSO support)
 AZURE_CLIENT_ID=your-azure-client-id
 AZURE_CLIENT_SECRET=your-azure-client-secret
-AZURE_TENANT_ID=common
+AZURE_TENANT_ID=common  # Use 'common' for personal + work accounts, or your tenant ID for org-only
 
 # Email Provider (for verification)
 RESEND_API_KEY=your-resend-api-key
@@ -168,6 +170,16 @@ npm run db:seed
 ```
 
 **✅ That's it!** No manual steps required. The setup is now fully automated.
+
+**What `db:setup:full` does automatically:**
+- Creates database if it doesn't exist
+- Applies all Drizzle migrations
+- Installs PostgreSQL extensions (pg_trgm, etc.)
+- Creates 38 performance indexes
+- Sets up 3 analytics functions for health monitoring
+- Creates 3 monitoring views for operational visibility
+- Runs database health checks and optimization
+- Validates schema integrity
 
 ### Step-by-Step Setup (Advanced)
 If you need to run individual steps:
@@ -208,9 +220,9 @@ npm run db:migrate        # Run database migrations
 npm run db:push          # Push schema changes (dev only)
 npm run db:introspect    # Introspect existing database
 
-# Optimization and maintenance
+# Health monitoring and optimization
 npm run db:optimize       # Apply performance optimizations
-npm run db:health        # Check database health
+npm run db:health        # Comprehensive database health check
 npm run db:maintenance   # Run maintenance tasks
 npm run db:analyze       # Analyze database performance
 
@@ -284,6 +296,31 @@ uv run ruff check .      # Linting
 uv run mypy .           # Type checking
 uv run black .          # Format code
 ```
+
+### Database Health Monitoring
+
+The project includes a comprehensive database health monitoring system:
+
+```bash
+cd frontend
+
+# Check overall database health with detailed metrics
+npm run db:health
+
+# Output includes:
+# - System Health Score (0-100)
+# - Database Size Summary
+# - Index Usage Analysis
+# - Performance Monitoring
+# - Optimization Recommendations
+```
+
+**Health Monitoring Features:**
+- **Automated Health Scoring**: Composite health score based on performance metrics
+- **Real-Time Analytics**: 3 analytics functions provide live system insights
+- **Performance Tracking**: Monitor query performance and optimization gains
+- **Index Monitoring**: Track index usage and effectiveness
+- **Maintenance Alerts**: Automated recommendations for maintenance tasks
 
 ### Database Operations
 
@@ -500,9 +537,13 @@ npm run typecheck
 
 #### Authentication Issues
 - Verify BETTER_AUTH_SECRET is set (generate with: `npx @better-auth/cli secret`)
-- Check OAuth provider credentials (GitHub, Google, Azure)
-- Ensure callback URLs are configured correctly in OAuth providers
+- Check OAuth provider credentials (GitHub, Google, Azure/Microsoft)
+- Ensure callback URLs are configured correctly in OAuth providers:
+  - GitHub: `http://localhost:3000/api/auth/callback/github`
+  - Google: `http://localhost:3000/api/auth/callback/google`
+  - Microsoft: `http://localhost:3000/api/auth/callback/microsoft`
 - Verify BETTER_AUTH_URL matches your application URL
+- For Microsoft SSO: Check AZURE_TENANT_ID is correct ('common' for multi-tenant)
 - Check RESEND_API_KEY for email verification
 - Clear browser cookies and session storage
 

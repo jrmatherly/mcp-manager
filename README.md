@@ -44,16 +44,23 @@ For detailed setup instructions, see **[QUICKSTART.md](./QUICKSTART.md)**.
 - **Unified Database Management**: All database operations consolidated in the frontend using Drizzle ORM
 - **Production-Ready Optimization**: 38 strategic indexes, 3 analytics functions, 3 monitoring views
 - **Real-Time Analytics**: Performance monitoring, health summaries, and usage analytics
+- **Database Health Monitoring**: Comprehensive health checks with `npm run db:health`
 - **Multi-Tenant Architecture**: Isolated tenant configurations with shared infrastructure
 - **Advanced Security**: Enhanced API keys, audit logging, circuit breakers
 
 ### Development Experience
 - **Type-Safe**: Complete TypeScript support with Drizzle-generated types
 - **Comprehensive Testing**: Database optimization tests, integration tests, unit tests
-- **Modern Stack**: Next.js 15, React 19, Tailwind CSS v4, Better-Auth with Microsoft/Entra ID
+- **Modern Stack**: Next.js 15, React 19, Tailwind CSS v4, Better-Auth with Microsoft SSO
 - **Production-Ready Logging**: Structured logging utility replacing all console.log statements
-- **Unified Database Management**: All database operations consolidated in frontend with TypeScript
+- **Automated Database Setup**: Complete setup with `npm run db:setup:full`
 - **Migration Management**: Automated database migrations with rollback support
+
+### Authentication & Security
+- **Multi-Provider SSO**: Google, GitHub, and Microsoft/Entra ID integration
+- **Session Management**: Better-Auth with Redis caching for high performance
+- **API Key Management**: Enhanced API keys with rate limiting and metadata
+- **Role-Based Access**: Admin, server owner, and user roles with proper permissions
 
 ## Database Schema
 
@@ -67,13 +74,14 @@ The application uses a comprehensive, production-optimized database schema inclu
 - **MCP**: Server registry, tool definitions, resource management, and protocol support
 - **Tenant**: Multi-tenancy support with isolated configurations
 
-### Performance Optimizations (Recently Implemented)
+### Performance Optimizations
 - **38 Strategic Indexes**: 33 essential + 5 composite indexes for 40-90% query performance improvement
 - **3 Database Functions**: Real-time analytics (`get_server_health_summary`, `get_request_performance_summary`, `get_tenant_usage_summary`)
 - **3 Monitoring Views**: Operational visibility (`database_size_summary`, `index_usage_summary`, `performance_monitoring`)
-- **Consolidated SQL Management**: All SQL files moved from `frontend/src/db/sql/` to `frontend/drizzle/sql/`
+- **Automated Health Monitoring**: Database health checks with performance scoring
 - **Full Text Search**: Advanced search capabilities across servers, tools, and resources
 - **Time-Series Optimization**: Specialized indexes for metrics and request logs
+- **Maintenance Automation**: Scheduled optimization tasks and analytics updates
 
 ### Schema Compatibility
 - **Better-Auth Integration**: Full compatibility with Better-Auth authentication flows

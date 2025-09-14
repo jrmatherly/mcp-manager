@@ -29,9 +29,17 @@ npm run db:studio                      # open Drizzle Studio GUI
 npm run db:seed                        # seed database with test data
 
 # Testing
-npm run test                           # run Vitest test suite
+npm run test                           # run Vitest test suite (all tests)
+npm run test:run                       # run tests once and exit
+npm run test:watch                     # run tests in watch mode
 npm run test:coverage                  # run tests with coverage report
+npm run test:ui                        # run tests with Vitest UI
+
+# Test categories
+npm run test tests/unit/               # run unit tests only
+npm run test tests/integration/        # run integration tests only
 npm run test tests/db-optimization.test.ts  # run database optimization tests
+npm run test tests/integration/api-key-integration.test.ts  # run API key tests
 ```
 
 ## Code Style
@@ -109,44 +117,129 @@ try {
 
 ## Testing
 
+### Test Organization Structure
+```
+tests/
+├── unit/                 # Unit tests for components, hooks, utilities
+├── integration/         # Integration tests for auth flows, API interactions
+├── e2e/                # End-to-end tests (Playwright configuration)
+└── utils/              # Test utilities and mocking
+    ├── auth-test-utils.ts  # Better-Auth mocking (no production code changes)
+    ├── db-test-utils.ts    # Database testing utilities with UUID fixes
+    ├── test-utils.tsx      # React Testing Library custom render
+    └── msw-server.ts       # API mocking with MSW
+```
+
 ### Test File Patterns
 - Test files: `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`
-- Test location: Alongside components or in `__tests__` directories
+- Test location: Organized in structured directories by test type
+- Integration tests: Located in `tests/integration/` with descriptive names
 
 ### Testing Conventions
 ```typescript
 // Component test example
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "../utils/test-utils";  // Use custom render
 import { describe, it, expect, vi } from "vitest";
-import UserCard from "./UserCard";
+import UserCard from "@/components/UserCard";
 
 describe("UserCard", () => {
   it("displays user information correctly", () => {
     const user = { id: "1", name: "John Doe", email: "john@example.com" };
-    
+
     render(<UserCard user={user} />);
-    
+
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("john@example.com")).toBeInTheDocument();
   });
-  
+
   it("calls onUpdate when edit button is clicked", () => {
     const onUpdate = vi.fn();
     const user = { id: "1", name: "John Doe", email: "john@example.com" };
-    
+
     render(<UserCard user={user} onUpdate={onUpdate} />);
-    
+
     fireEvent.click(screen.getByRole("button", { name: /edit/i }));
-    
+
     expect(onUpdate).toHaveBeenCalledWith(user);
   });
 });
 ```
 
+### Integration Testing Example
+```typescript
+// API integration test example
+import { describe, it, expect, beforeEach } from "vitest";
+import { mockAuth, resetMockAuth } from "../utils/auth-test-utils";
+
+describe("Better-Auth API Key Integration", () => {
+  beforeEach(() => {
+    resetMockAuth();  // Clean slate for each test
+  });
+
+  it("should create and verify API key", async () => {
+    const apiKey = await mockAuth.api.createApiKey({
+      body: { name: "Test Key", userId: "test-user" }
+    });
+
+    expect(apiKey.key).toBeDefined();
+
+    const verification = await mockAuth.api.verifyApiKey({
+      body: { key: apiKey.key }
+    });
+
+    expect(verification.valid).toBe(true);
+  });
+});
+```
+
+### Configuration Updates
+
+**ESLint Configuration (eslint.config.mjs)**
+- **ESLint 9 Flat Config Format**: Modern configuration with proper ignore patterns
+- **Global Ignores**: Comprehensive exclusion patterns for build outputs, node_modules, generated files
+- **TypeScript Integration**: Full TypeScript support with consistent type imports
+- **Test File Overrides**: Specialized rules for test files with Vitest globals
+- **Next.js Integration**: Includes Next.js core web vitals and TypeScript rules
+
+**TypeScript Configuration (tsconfig.json)**
+- **BigInt Support**: `es2020.bigint` library for PostgreSQL compatibility
+- **Path Aliases**: `@/*` mapping to `./src/*` for clean imports
+- **Test Inclusion**: Explicit inclusion of `tests/**/*.ts` and `tests/**/*.tsx`
+- **Proper Exclusions**: Build outputs, generated files, and SQL files excluded
+
+**Vitest Configuration (vitest.config.ts)**
+- **JSdom Environment**: React component testing support
+- **BigInt Support**: ESBuild configuration for PostgreSQL numeric types
+- **Forks Pool**: Better compatibility with native modules and database connections
+- **Extended Timeouts**: 15-second test and hook timeouts for database operations
+- **Path Aliases**: Matches TypeScript configuration for consistent imports
+
+## Key Features
+
+### Database Integration (TypeScript/Drizzle)
+- **Unified Database Management**: All database operations consolidated in frontend
+- **Type-Safe Operations**: Complete TypeScript support with Drizzle-generated types
+- **Performance Monitoring**: Built-in database health checks and analytics
+- **Automated Setup**: `npm run db:setup:full` handles complete database initialization
+
+### Authentication System (Better-Auth)
+- **Multi-Provider SSO**: Google, GitHub, and Microsoft/Entra ID integration
+- **Session Management**: Redis-backed sessions for high performance
+- **API Key Support**: Enhanced API keys with rate limiting and metadata
+- **Email Verification**: Resend integration for email verification flows
+
+### Testing Infrastructure (Vitest)
+- **Database Testing**: Comprehensive database optimization test suite
+- **BigInt Support**: Configured for PostgreSQL BigInt compatibility
+- **Performance Testing**: Database query performance validation
+- **Component Testing**: React Testing Library integration
+
 ## Dependencies and Version Requirements
 
 **Frontend:**
-- Node.js: >= 18
+- Node.js: >= 22.0.0
 - Next.js: 15.5.3
 - React: 19.1.1
 - TypeScript: 5.9.2
+- Drizzle ORM: 0.44.5+
+- Better-Auth: 1.3.9+

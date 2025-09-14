@@ -27,15 +27,11 @@
       "@/*": [
         "./src/*"
       ]
-    },
-    "types": [
-      "vitest/globals",
-      "node",
-      "@testing-library/jest-dom"
-    ]
+    }
   },
   "include": [
     "next-env.d.ts",
+    "vitest.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
@@ -43,6 +39,15 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "out",
+    "dist",
+    "build",
+    "coverage",
+    ".nyc_output",
+    "public",
+    "drizzle/**/*.sql",
+    "drizzle/meta"
   ]
 }

@@ -16,6 +16,29 @@ const compat = new FlatCompat({
 })
 
 const eslintConfig = [
+  // Global ignores - MUST be first for proper exclusion
+  {
+    ignores: [
+      '**/node_modules/**',  // Exclude all node_modules (ESLint does this by default but being explicit)
+      '**/.next/**',         // Next.js build output
+      '**/out/**',           // Next.js export output
+      '**/dist/**',          // Distribution/build output
+      '**/build/**',         // Build output
+      '**/coverage/**',      // Test coverage reports
+      '**/.nyc_output/**',   // NYC test coverage
+      '**/public/**/*.js',   // Generated/third-party scripts in public
+      '**/.git/**',          // Git directory (ESLint does this by default but being explicit)
+      '**/.vscode/**',       // VS Code settings
+      '**/.idea/**',         // IntelliJ IDEA settings
+      '**/temp/**',          // Temporary files
+      '**/tmp/**',           // Temporary files
+      '**/*.min.js',         // Minified files
+      '**/*.d.ts',           // TypeScript declaration files
+      'vitest.d.ts',         // Vitest type declarations
+      '**/drizzle/**/*.sql', // SQL migration files
+      '**/drizzle/meta/**',  // Drizzle metadata
+    ],
+  },
 
   // Base configuration
   js.configs.recommended,
@@ -25,20 +48,6 @@ const eslintConfig = [
 
   // Next.js configuration (includes React rules)
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
-
-  // Global ignores
-  {
-    ignores: [
-      '.next/**',
-      'out/**',
-      'dist/**',
-      'build/**',
-      'node_modules/**',
-      'coverage/**',
-      '.nyc_output/**',
-      'public/**/*.js', // Only generated/third-party scripts
-    ],
-  },
 
   // React hooks configuration
   {

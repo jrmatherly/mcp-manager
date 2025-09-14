@@ -36,6 +36,7 @@ import { user, session, account, verification, twoFactorAuth, userPermission } f
 import { tenant, tenantMember, tenantInvitation, tenantUsage } from "./tenant";
 import { mcpServer, mcpTool, mcpResource, mcpPrompt, mcpServerDependency, mcpServerHealthCheck } from "./mcp";
 import { apiToken, rateLimitConfig, rateLimitViolation, apiUsage, apiUsageStats } from "./api";
+import { apiKey } from "./better-auth-api-key";
 import { auditLog, errorLog, systemEvent, securityEvent } from "./audit";
 import {
   systemConfig,
@@ -168,6 +169,9 @@ export const schema = {
   rateLimitViolation,
   apiUsage,
   apiUsageStats,
+
+  // Better-Auth API Key
+  apiKey,
 
   // Audit tables
   auditLog,

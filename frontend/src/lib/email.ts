@@ -1,12 +1,13 @@
 import { Resend } from "resend";
+import { env } from "@/env";
 
 // Initialize Resend with API key or placeholder for development
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 export const sendEmail = async (payload: { to: string; subject: string; text: string }) => {
   // If no Resend API key, log to console in development
   if (!resend) {
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       // eslint-disable-next-line no-console
       console.log("📧 Email (dev mode):", payload);
       return true; // Simulate success in development

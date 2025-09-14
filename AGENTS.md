@@ -69,10 +69,15 @@ docker-compose down -v               # Stop and remove volumes
 
 - **Backend**: `pytest` with markers (`@pytest.mark.unit`, `@pytest.mark.integration`)
 - **Frontend**: Vitest with React Testing Library
-- **Database**: Comprehensive optimization tests in `frontend/tests/db-optimization.test.ts`
+- **Test Organization**: Structured test directories with specialized utilities
+  - **Unit Tests**: `frontend/tests/unit/` - Components, hooks, utilities
+  - **Integration Tests**: `frontend/tests/integration/` - API flows, auth workflows
+  - **Database Tests**: `frontend/tests/db-optimization.test.ts` - Performance optimization
+  - **E2E Tests**: `frontend/tests/e2e/` - End-to-end user workflows
 - **Coverage**: 80% minimum, 95% for critical paths
 - **Test Infrastructure**: Vitest configured with BigInt support, PostgreSQL integration
-- **Location**: `backend/tests/`, `frontend/tests/` with specialized test utilities
+- **Test Utilities**: Auth mocking, database utilities, MSW API mocking
+- **Location**: `backend/tests/`, `frontend/tests/` with comprehensive test utilities
 
 ## File Organization
 
@@ -109,8 +114,8 @@ For comprehensive guides, see:
 
 **Backend**: Python ≥3.10, FastAPI ≥0.114.2, FastMCP ≥0.4.0, PostgreSQL ≥17, Redis ≥8
 **Frontend**: Node.js ≥22, Next.js 15.5.3, React 19.1.1, TypeScript 5.9.2
-**Database**: PostgreSQL ≥17 with 38 performance indexes, 3 analytics functions, 3 monitoring views
-**Testing**: Vitest with BigInt support, PostgreSQL integration, comprehensive database test suite
+**Database**: PostgreSQL ≥17 with 38 performance indexes, 3 analytics functions, 3 monitoring views, automated health monitoring
+**Testing**: Vitest with BigInt support, PostgreSQL integration, comprehensive database optimization test suite
 
 ## ⚠️ Critical Rules
 
@@ -121,19 +126,22 @@ For comprehensive guides, see:
 
 ### Security & Best Practices
 - Never commit `.env` files (use `.env.example` templates)
-- Better-Auth with Microsoft/Entra ID integration for authentication and session management
+- Better-Auth with multi-provider SSO (Google, GitHub, Microsoft/Entra ID) for authentication and session management
 - Pydantic validation for backend, Zod validation for frontend
 - Rate limiting: Admin (1000 RPM), Server Owner (500 RPM), User (100 RPM), Anonymous (20 RPM)
 - Centralized logging utility (replaced all console.log statements)
 - Type-safe database operations with Drizzle ORM (unified in frontend)
 - Environment-aware configuration and structured logging
+- Automated database health monitoring with performance scoring
 
 ### Database Performance & Optimization
 - **38 Strategic Indexes**: Essential + composite indexes for 40-90% query performance improvement
-- **3 Database Functions**: Real-time analytics and monitoring capabilities
-- **3 Monitoring Views**: Operational visibility for database health and performance
+- **3 Database Functions**: Real-time analytics and monitoring capabilities (`get_server_health_summary`, `get_request_performance_summary`, `get_tenant_usage_summary`)
+- **3 Monitoring Views**: Operational visibility for database health and performance (`database_size_summary`, `index_usage_summary`, `performance_monitoring`)
+- **Automated Health Monitoring**: Database health scoring and performance tracking with `npm run db:health`
 - **Migration Management**: Automated migrations with comprehensive rollback support
-- **Test Coverage**: Database optimization test suite with performance validation
+- **Test Coverage**: Database optimization test suite with performance validation and health check testing
+- **Maintenance Automation**: Scheduled optimization tasks with `npm run db:maintenance`
 
 ---
 

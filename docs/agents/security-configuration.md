@@ -11,10 +11,12 @@
 - Rate limiting: Admin (1000 RPM), Server Owner (500 RPM), User (100 RPM), Anonymous (20 RPM)
 
 **Frontend Security:**
-- Better-Auth for secure session management
+- Better-Auth for secure session management with Redis caching
+- Multi-provider SSO (Google, GitHub, Microsoft/Entra ID)
 - httpOnly cookies for token storage
 - CSRF protection on state-changing operations
 - Content Security Policy (CSP) headers
+- API key authentication with rate limiting
 
 ### Data Validation
 
@@ -117,6 +119,20 @@ NEXT_PUBLIC_MCP_URL=http://localhost:8001
 BETTER_AUTH_SECRET=your-better-auth-secret
 BETTER_AUTH_URL=http://localhost:3000
 
+# OAuth Providers (all optional - enable only what you need)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Microsoft/Azure SSO (Enterprise SSO support)
+AZURE_CLIENT_ID=your-azure-client-id
+AZURE_CLIENT_SECRET=your-azure-client-secret
+AZURE_TENANT_ID=common  # 'common' for multi-tenant, or your tenant ID
+
+# Email Verification
+RESEND_API_KEY=your-resend-api-key
+
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/mcp_registry
 ```
@@ -164,7 +180,9 @@ DATABASE_URL=postgresql://user:password@localhost:5432/mcp_registry
 - Redis: >= 6
 
 **Frontend:**
-- Node.js: >= 18
+- Node.js: >= 22.0.0
 - Next.js: 15.5.3
 - React: 19.1.1
 - TypeScript: 5.9.2
+- Better-Auth: 1.3.9+
+- Drizzle ORM: 0.44.5+

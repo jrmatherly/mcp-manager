@@ -1,5 +1,21 @@
 # Docker & Deployment Guide
 
+## Recent Updates
+
+**Database Management Changes (Important):**
+- **Unified in Frontend**: All database operations now managed via TypeScript in frontend
+- **Automated Setup**: `npm run db:setup:full` handles complete database initialization
+- **Health Monitoring**: Built-in health checks with `npm run db:health`
+- **Performance Optimization**: 38 indexes, 3 analytics functions, 3 monitoring views applied automatically
+- **No Manual SQL**: All SQL execution is now automated through TypeScript scripts
+
+**Authentication Updates:**
+- **Multi-Provider SSO**: Google, GitHub, and Microsoft/Entra ID support
+- **Better-Auth Integration**: Session management with Redis caching
+- **Environment Variables**: Updated OAuth provider configuration
+
+## Docker & Deployment Guide
+
 ## Docker Operations
 
 ### Basic Commands

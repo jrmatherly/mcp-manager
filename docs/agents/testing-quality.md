@@ -20,8 +20,10 @@ Key principles:
 - **38 Index Verification**: Tests all performance indexes exist and are properly configured
 - **3 Function Testing**: Validates database analytics functions (`get_server_health_summary`, `get_request_performance_summary`, `get_tenant_usage_summary`)
 - **3 View Testing**: Confirms monitoring views (`database_size_summary`, `index_usage_summary`, `performance_monitoring`)
+- **Health Monitoring**: Tests automated health checks and scoring system
 - **Migration Integrity**: Validates migration rollback capabilities
-- **Performance Testing**: Measures query performance improvements
+- **Performance Testing**: Measures query performance improvements (40-90% gains)
+- **Maintenance Tasks**: Validates automated maintenance and optimization tasks
 
 ### Test Configuration
 
@@ -47,26 +49,70 @@ export default defineConfig({
 
 ### Test Utilities
 
+### Test Utilities Documentation
+
 **Database Test Utilities**: `frontend/tests/utils/db-test-utils.ts`
 - Database connection management with proper cleanup
-- Test data creation and cleanup functions
-- Performance measurement utilities
+- Test data creation and cleanup functions (users, tenants, MCP servers)
+- Performance measurement utilities for optimization tests
 - BigInt compatibility helpers for PostgreSQL results
+- Health check validation utilities
+- Index, function, and view existence checking
+- Query plan analysis for index usage verification
+- Comprehensive test data cleanup with UUID casting fixes
+
+**Better-Auth Test Utilities**: `frontend/tests/utils/auth-test-utils.ts`
+- Mock implementations for Better-Auth API key functionality
+- API key creation, verification, and deletion mocking
+- Rate limiting and permissions testing support
+- Session management mocking for integration tests
+- No modification of production code - pure testing utilities
+- Comprehensive mock reset functionality between tests
+
+**MSW Server**: `frontend/tests/utils/msw-server.ts`
+- Mock Service Worker for API endpoint mocking
+- Handles auth, MCP server, and admin API endpoints
+- Automatic lifecycle management (start/stop/reset)
+- Fallback handlers for unhandled requests
+
+**React Test Utils**: `frontend/tests/utils/test-utils.tsx`
+- Custom render function with necessary providers
+- Theme provider and React Query client setup
+- Testing Library configuration optimized for the project
+
+**Database Health Monitoring System**:
+- **Health Score Calculation**: Composite scoring based on multiple metrics
+- **Performance Analytics**: Real-time query performance monitoring
+- **Index Usage Tracking**: Monitor index effectiveness and usage patterns
+- **System Health Alerts**: Automated alerts for performance degradation
+- **Maintenance Automation**: Scheduled maintenance tasks and optimization
 
 ### Running Frontend Tests
 
 ```bash
-# Run all tests
+# Run all tests (includes database optimization and integration tests)
 npm run test
+
+# Run specific test categories
+npm run test tests/unit/                      # Run all unit tests
+npm run test tests/integration/               # Run all integration tests
+npm run test tests/integration/api-key-integration.test.ts  # Run specific integration test
 
 # Run database optimization tests specifically
 npm run test tests/db-optimization.test.ts
 
-# Run tests with coverage
-npm run test --coverage
+# Run tests with coverage report
+npm run test:coverage
 
 # Run tests in watch mode for development
-npm run test --watch
+npm run test:watch
+
+# Run tests with Vitest UI
+npm run test:ui
+
+# Run tests matching a pattern
+npm run test -- --grep="auth"                # Run auth-related tests
+npm run test -- --grep="API key"             # Run API key tests
 ```
 
 ## Backend Testing (Python/Pytest)
@@ -109,9 +155,31 @@ async def test_user_creation_with_valid_data():
 
 ## Frontend Testing (Vitest/React Testing Library)
 
+### Test Organization Structure
+
+**Directory Structure**:
+```
+tests/
+├── unit/                 # Unit tests for individual components and utilities
+│   ├── components/       # React component tests
+│   ├── hooks/           # Custom hook tests
+│   └── utils/           # Utility function tests
+├── integration/         # Integration tests for component interactions
+│   ├── auth/           # Authentication flow tests
+│   ├── admin/          # Admin functionality tests
+│   └── api/            # API integration tests
+├── e2e/                # End-to-end tests (Playwright - see separate config)
+└── utils/              # Shared test utilities and setup
+    ├── test-utils.tsx  # Custom render function and providers
+    ├── auth-test-utils.ts  # Better-Auth mocking utilities
+    ├── db-test-utils.ts    # Database test utilities
+    ├── msw-server.ts   # API mocking with MSW
+    └── setup.ts        # Global test setup
+```
+
 ### Test File Patterns
 - Test files: `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`
-- Test location: Alongside components or in `__tests__` directories
+- Test location: Organized in structured directories by test type
 
 ### Testing Conventions
 ```typescript

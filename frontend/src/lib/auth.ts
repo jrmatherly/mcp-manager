@@ -1,4 +1,5 @@
 import { db } from "@/db";
+import { env } from "@/env";
 import * as schema from "@/db/schema";
 import { apiKey as apiKeyTable } from "@/db/schema/better-auth-api-key";
 import { sendEmail } from "@/lib/email";
@@ -13,8 +14,8 @@ export const auth = betterAuth({
     provider: "pg",
     schema: {
       ...schema,
-      // Use the Better-Auth compatible apiKey table
-      apiKey: apiKeyTable,
+      // Use the Better-Auth compatible apiKey table (lowercase key required by Better-Auth)
+      apikey: apiKeyTable,
     },
   }),
   // Redis secondary storage for high-performance caching
@@ -41,26 +42,26 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
   },
   socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    },
-    google: {
+    github: env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    } : undefined,
+    google: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
       prompt: "select_account",
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-    microsoft: {
-      clientId: process.env.AZURE_CLIENT_ID as string,
-      clientSecret: process.env.AZURE_CLIENT_SECRET as string,
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    } : undefined,
+    microsoft: env.AZURE_CLIENT_ID && env.AZURE_CLIENT_SECRET ? {
+      clientId: env.AZURE_CLIENT_ID,
+      clientSecret: env.AZURE_CLIENT_SECRET,
       // Use 'common' to support both personal and organizational accounts
       // or specify your tenant ID for organization-only access
-      tenantId: process.env.AZURE_TENANT_ID || 'common',
+      tenantId: env.AZURE_TENANT_ID,
       // Standard Microsoft Authentication authority
       authority: "https://login.microsoftonline.com",
       // Forces account selection screen for better UX
       prompt: "select_account",
-    },
+    } : undefined,
   },
   plugins: [
     nextCookies(),

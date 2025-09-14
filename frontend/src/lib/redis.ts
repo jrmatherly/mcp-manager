@@ -5,6 +5,7 @@
 
 import { createClient } from "redis";
 import { createLogger } from "./logger";
+import { env } from "@/env";
 
 // Create Redis-specific logger
 const logger = createLogger("redis");
@@ -17,7 +18,7 @@ let redisClient: ReturnType<typeof createClient> | null = null;
  */
 export async function getRedisClient() {
   if (!redisClient) {
-    const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+    const redisUrl = env.REDIS_URL || "redis://localhost:6379";
 
     redisClient = createClient({
       url: redisUrl,

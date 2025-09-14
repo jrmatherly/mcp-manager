@@ -1,4 +1,4 @@
-import "dotenv/config";
+import { env } from "./src/env"; // Validate environment variables at build time
 import { defineConfig } from "drizzle-kit";
 import { getSSLConfig } from "./src/db/ssl-config";
 
@@ -7,7 +7,7 @@ export default defineConfig({
   schema: "./src/db/schema/index.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: env.DATABASE_URL,
     // Parse SSL configuration from DATABASE_URL sslmode parameter
     ssl: getSSLConfig(),
   },

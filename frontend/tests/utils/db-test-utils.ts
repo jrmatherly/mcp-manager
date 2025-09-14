@@ -27,18 +27,25 @@ export async function createTestData(): Promise<TestDataIds> {
     userId: `test-user-${timestamp}`,
   };
 
-  // Create test tenant first
+  // Create test user first (without tenant_id)
   await db.execute(sql`
-    INSERT INTO tenant (id, name, plan, is_active)
-    VALUES (${testIds.tenantId}, 'Test Tenant', 'free', true)
+    INSERT INTO "user" (id, name, email, email_verified, is_active, created_at, updated_at)
+    VALUES (${testIds.userId}, 'Test User', 'test@example.com', true, true, NOW(), NOW())
     ON CONFLICT (id) DO NOTHING
   `);
 
-  // Create test user
+  // Create test tenant with user as owner
   await db.execute(sql`
-    INSERT INTO "user" (id, email, email_verified, tenant_id, is_active)
-    VALUES (${testIds.userId}, 'test@example.com', true, ${testIds.tenantId}, true)
+    INSERT INTO tenant (id, name, slug, owner_id, plan_type, status, created_at, updated_at)
+    VALUES (${testIds.tenantId}, 'Test Tenant', ${"test-tenant-" + timestamp}, ${testIds.userId}, 'free', 'active', NOW(), NOW())
     ON CONFLICT (id) DO NOTHING
+  `);
+
+  // Update user with tenant_id
+  await db.execute(sql`
+    UPDATE "user"
+    SET tenant_id = ${testIds.tenantId}
+    WHERE id = ${testIds.userId}
   `);
 
   // Create test MCP server
@@ -227,18 +234,22 @@ export async function cleanupTestDataByPattern(): Promise<void> {
   // Clean up any test data that might have been left behind
   // Use try-catch for each table in case it doesn't exist yet
   const tables = [
-    { table: "request_logs", column: "request_id", pattern: "test-request-%" },
-    { table: "circuit_breakers", column: "id", pattern: "test-breaker-%" },
-    { table: "connection_pools", column: "id", pattern: "test-pool-%" },
-    { table: "performance_alerts", column: "id", pattern: "test-alert-%" },
-    { table: "mcp_server", column: "id", pattern: "test-server-%" },
-    { table: '"user"', column: "id", pattern: "test-user-%" },
-    { table: "tenant", column: "id", pattern: "test-tenant-%" },
+    { table: "request_logs", column: "request_id", pattern: "test-request-%", isText: true },
+    { table: "circuit_breakers", column: "id", pattern: "test-breaker-%", isText: false },
+    { table: "connection_pools", column: "id", pattern: "test-pool-%", isText: false },
+    { table: "performance_alerts", column: "id", pattern: "test-alert-%", isText: false },
+    { table: "mcp_server", column: "id", pattern: "test-server-%", isText: true },
+    { table: '"user"', column: "id", pattern: "test-user-%", isText: true },
+    { table: "tenant", column: "id", pattern: "test-tenant-%", isText: true },
   ];
 
-  for (const { table, column, pattern } of tables) {
+  for (const { table, column, pattern, isText } of tables) {
     try {
-      await db.execute(sql.raw(`DELETE FROM ${table} WHERE ${column} LIKE '${pattern}'`));
+      // For text columns, use LIKE; for UUID columns, cast to text first
+      const query = isText
+        ? `DELETE FROM ${table} WHERE ${column} LIKE '${pattern}'`
+        : `DELETE FROM ${table} WHERE ${column}::text LIKE '${pattern}'`;
+      await db.execute(sql.raw(query));
     } catch (error: any) {
       // Ignore relation does not exist errors during cleanup
       if (error?.code === "42P01") {

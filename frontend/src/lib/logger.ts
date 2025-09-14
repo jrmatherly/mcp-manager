@@ -10,6 +10,8 @@
  * - Performance optimized with log level checks
  */
 
+import { env } from "@/env";
+
 // Types
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type LogContext = Record<string, unknown>;
@@ -35,8 +37,8 @@ interface LoggerConfig {
 // Environment detection
 const isServer = typeof window === "undefined";
 const isBrowser = !isServer;
-const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
+const isDevelopment = env.NODE_ENV === "development";
+const isProduction = env.NODE_ENV === "production";
 
 // Log levels with numeric values for comparison
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -73,10 +75,10 @@ const DEFAULT_CONFIG: LoggerConfig = {
 
 // Parse configuration from environment variables
 function getConfig(): LoggerConfig {
-  const envLevel = (process.env.NEXT_PUBLIC_LOG_LEVEL || process.env.LOG_LEVEL)?.toLowerCase() as LogLevel;
-  const enableInProduction = process.env.NEXT_PUBLIC_LOG_PRODUCTION === "true" || process.env.LOG_PRODUCTION === "true";
-  const enableInBrowser = process.env.NEXT_PUBLIC_LOG_BROWSER !== "false";
-  const enableStructured = process.env.NEXT_PUBLIC_LOG_STRUCTURED === "true" || process.env.LOG_STRUCTURED === "true";
+  const envLevel = (isServer ? env.LOG_LEVEL : env.NEXT_PUBLIC_LOG_LEVEL) as LogLevel;
+  const enableInProduction = isServer ? env.LOG_PRODUCTION : env.NEXT_PUBLIC_LOG_PRODUCTION;
+  const enableInBrowser = env.NEXT_PUBLIC_LOG_BROWSER;
+  const enableStructured = isServer ? env.LOG_STRUCTURED : env.NEXT_PUBLIC_LOG_STRUCTURED;
 
   return {
     ...DEFAULT_CONFIG,

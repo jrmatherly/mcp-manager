@@ -13,6 +13,8 @@
  * 3. Default → SSL disabled for local development
  */
 
+import { env } from "../env";
+
 /**
  * Parse SSL configuration from a PostgreSQL connection string
  *
@@ -25,13 +27,8 @@ export function parseSSLConfig(connectionString: string): boolean | object {
     const sslMode = url.searchParams.get("sslmode");
 
     // Priority 1: If DB_SSL environment variable is set, use it (highest priority)
-    if (process.env.DB_SSL !== undefined) {
-      const dbSslValue = process.env.DB_SSL.toLowerCase();
-      if (dbSslValue === "false") {
-        return false;
-      } else if (dbSslValue === "true") {
-        return true;
-      }
+    if (env.DB_SSL !== undefined) {
+      return env.DB_SSL;
     }
 
     // Priority 2: Default SSL configuration based on sslmode parameter
@@ -55,8 +52,8 @@ export function parseSSLConfig(connectionString: string): boolean | object {
     // Use process.stderr.write for error output instead of console
     process.stderr.write(`Warning: Failed to parse SSL config from DATABASE_URL: ${error}\n`);
     // Fallback to DB_SSL environment variable or disable SSL
-    if (process.env.DB_SSL !== undefined) {
-      return process.env.DB_SSL.toLowerCase() === "true";
+    if (env.DB_SSL !== undefined) {
+      return env.DB_SSL;
     }
     return false;
   }
@@ -68,9 +65,6 @@ export function parseSSLConfig(connectionString: string): boolean | object {
  * @returns SSL configuration based on current DATABASE_URL
  */
 export function getSSLConfig(): boolean | object {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is required");
-  }
+  const connectionString = env.DATABASE_URL;
   return parseSSLConfig(connectionString);
 }

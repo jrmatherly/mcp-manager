@@ -5,6 +5,7 @@
  * for development and testing environments.
  */
 
+import { env } from "../env";
 import type { drizzle } from "drizzle-orm/node-postgres";
 import { user, tenant, tenantMember, systemConfig, featureFlag, rateLimitConfig, mcpServer } from "./schema/index";
 import { dbLogger } from "../lib/logger";
@@ -175,7 +176,7 @@ async function seedRateLimitConfig(db: DatabaseConnection) {
  * Seed demo tenant and users (development only)
  */
 async function seedDemoData(db: DatabaseConnection) {
-  if (process.env.NODE_ENV === "production") {
+  if (env.NODE_ENV === "production") {
     return;
   }
 
