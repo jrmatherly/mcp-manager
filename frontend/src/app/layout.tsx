@@ -7,7 +7,7 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false, // Disable automatic preloading to prevent console warning
 });
 
 export const metadata: Metadata = {
@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} antialiased bg-background`}>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className={`${inter.variable} font-sans antialiased bg-background`}>
         {children}
         <Toaster />
       </body>

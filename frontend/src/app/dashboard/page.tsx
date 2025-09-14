@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import Navbar from "@/components/landing/navbar";
 import { ServerList } from "@/components/servers/server-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +16,35 @@ import { formatDistanceToNow } from "date-fns";
 const DashboardPage = () => {
   const [showServerForm, setShowServerForm] = useState(false);
   const [selectedServer, setSelectedServer] = useState<ServerResponse | null>(null);
+  const router = useRouter();
+  const { useSession } = authClient;
+  const { data: session, isPending } = useSession();
 
   const { stats, isLoading, isError, error, refetch } = useDashboard();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/auth/login");
+    }
+  }, [session, isPending, router]);
+
+  // Show loading state while checking authentication
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the page if not authenticated
+  if (!session) {
+    return null;
+  }
 
   const handleCreateServer = () => {
     setSelectedServer(null);

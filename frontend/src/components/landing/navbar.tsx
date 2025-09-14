@@ -110,7 +110,19 @@ const Navbar = () => {
                   )}
 
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-destructive focus:text-destructive">
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        await signOut();
+                        // Force a hard redirect to ensure session is cleared
+                        window.location.href = "/auth/login";
+                      } catch {
+                        // Logout error - still redirect as fallback
+                        window.location.href = "/auth/login";
+                      }
+                    }}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>

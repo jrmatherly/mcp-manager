@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Users, Settings, LogOut, GalleryVerticalEnd } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -27,15 +27,17 @@ const sidebarNavItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { signOut } = authClient;
 
   const handleLogout = async () => {
     try {
       await signOut();
-      router.push("/auth/login");
+      // Force a hard redirect to ensure session is cleared
+      window.location.href = "/auth/login";
     } catch {
-      // Logout error logged
+      // Logout error - still redirect as fallback
+      // Error is handled by redirecting anyway
+      window.location.href = "/auth/login";
     }
   };
 

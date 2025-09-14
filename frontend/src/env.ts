@@ -91,6 +91,13 @@ export const env = createEnv({
       .optional()
       .describe("Redis connection URL for caching"),
 
+    // Backend API Configuration
+    BACKEND_URL: z
+      .string()
+      .url("Invalid backend URL")
+      .default("http://localhost:8000")
+      .describe("Backend API server URL"),
+
     // Server-side Logging
     LOG_LEVEL: z
       .enum(["debug", "info", "warn", "error"])
@@ -184,6 +191,7 @@ export const env = createEnv({
     AZURE_TENANT_ID: process.env.AZURE_TENANT_ID,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     REDIS_URL: process.env.REDIS_URL,
+    BACKEND_URL: process.env.BACKEND_URL,
     LOG_LEVEL: process.env.LOG_LEVEL,
     LOG_PRODUCTION: process.env.LOG_PRODUCTION,
     LOG_STRUCTURED: process.env.LOG_STRUCTURED,
