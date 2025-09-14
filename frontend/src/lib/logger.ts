@@ -356,6 +356,70 @@ export const errorBoundaryLogger = createLogger("error-boundary", {
   enableInBrowser: true,
 });
 
+/**
+ * Better-Auth Logger Integration
+ *
+ * Creates a Better-Auth compatible logger function that integrates with our existing
+ * logger infrastructure, preserving structured logging, colors, and environment awareness.
+ */
+export function createBetterAuthLogger(logger: Logger) {
+  // Use Reflect to safely access private config
+  const loggerConfig = Reflect.get(logger, "config") as LoggerConfig | undefined;
+  const enableColors = loggerConfig?.enableColors ?? true;
+
+  return {
+    disabled: false,
+    disableColors: !enableColors,
+    level: logger.getLevel() as "debug" | "info" | "warn" | "error",
+    log: (level: "debug" | "info" | "warn" | "error", message: string, ...args: unknown[]) => {
+      // Add Better-Auth context to all log messages
+      const betterAuthPrefix = "[Better-Auth]";
+      // Convert Better-Auth log call to our logger format
+      const context: LogContext = {};
+
+      // Process additional arguments into context
+      if (args.length > 0) {
+        args.forEach((arg, index) => {
+          if (typeof arg === "object" && arg !== null) {
+            // Merge objects into context
+            Object.assign(context, arg);
+          } else {
+            // Add primitive values as indexed properties
+            context[`arg${index}`] = arg;
+          }
+        });
+      }
+
+      // Add Better-Auth specific context
+      context.component = "better-auth";
+
+      // Call appropriate logger method with context if available
+      const logContext = Object.keys(context).length > 0 ? context : { component: "better-auth" };
+      const formattedMessage = `${betterAuthPrefix} ${message}`;
+
+      switch (level) {
+        case "debug":
+          logger.debug(formattedMessage, logContext);
+          break;
+        case "info":
+          logger.info(formattedMessage, logContext);
+          break;
+        case "warn":
+          logger.warn(formattedMessage, logContext);
+          break;
+        case "error":
+          logger.error(formattedMessage, logContext);
+          break;
+        default:
+          logger.info(formattedMessage, logContext);
+      }
+    },
+  };
+}
+
+// Better-Auth logger instance using the existing authLogger
+export const betterAuthLogger = createBetterAuthLogger(authLogger);
+
 // Export types (LogLevel and LogContext are already exported above)
 export type { LogEntry };
 export { Logger };

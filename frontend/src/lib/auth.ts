@@ -4,6 +4,7 @@ import * as schema from "@/db/schema";
 import { apiKey as apiKeyTable } from "@/db/schema/better-auth-api-key";
 import { sendEmail } from "@/lib/email";
 import { redisSecondaryStorage } from "@/lib/redis";
+import { betterAuthLogger } from "@/lib/logger";
 import { betterAuth } from "better-auth";
 import { admin, apiKey } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
@@ -33,6 +34,8 @@ export const auth = betterAuth({
   }),
   // Redis secondary storage for high-performance caching
   secondaryStorage: redisSecondaryStorage,
+  // Integrated logger using existing logger infrastructure
+  logger: betterAuthLogger,
   // OAuth hooks for provider-specific handling
   hooks: {
     after: OAUTH_HOOKS.after,

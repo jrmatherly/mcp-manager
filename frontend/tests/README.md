@@ -62,6 +62,10 @@ npm test -- button.test.tsx
 
 # Run tests matching pattern
 npm test -- --grep="login"
+
+# Run Better-Auth logger tests specifically
+npm test tests/unit/better-auth-logger.test.ts
+npm test tests/integration/better-auth-logger-integration.test.ts
 ```
 
 ## Test Categories
@@ -76,6 +80,7 @@ Test individual components and functions in isolation:
 ### Integration Tests (`tests/integration/`)
 Test component interactions and API communication:
 - **API Key Integration**: Better-Auth API key creation, verification, deletion
+- **Better-Auth Logger Integration**: Logger adapter functionality and real-world usage patterns
 - Authentication flows and session management
 - Admin functionality workflows
 - API error handling and edge cases
@@ -254,6 +259,19 @@ npm test -- --run button.test.tsx
 - **TypeScript strict mode**: All tests use proper TypeScript typing with BigInt support
 - **Vitest configuration**: Tests run with proper timeouts and database compatibility
 
+## Specialized Test Documentation
+
+### Better-Auth Logger Integration
+For comprehensive documentation on Better-Auth logger testing, see:
+**[Better-Auth Logger Test Documentation](./README-better-auth-logger.md)**
+
+This documentation covers:
+- **47 total tests** (30 unit + 17 integration)
+- Logger adapter implementation patterns
+- Performance benchmarks and edge case handling
+- Reflect.get() approach for private property access
+- Integration with existing logging infrastructure
+
 ## Contributing
 
 1. Write tests for all new components and utilities
@@ -263,5 +281,6 @@ npm test -- --run button.test.tsx
 5. **Never modify production code to make tests pass**
 6. Use `auth-test-utils.ts` for Better-Auth mocking
 7. Use `db-test-utils.ts` for database testing with proper cleanup
-8. Ensure tests are fast and reliable with proper isolation
-9. Update this README when adding new test patterns or utilities
+8. Use Better-Auth logger patterns from the [dedicated documentation](./README-better-auth-logger.md)
+9. Ensure tests are fast and reliable with proper isolation
+10. Update this README when adding new test patterns or utilities

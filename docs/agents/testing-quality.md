@@ -69,6 +69,14 @@ export default defineConfig({
 - No modification of production code - pure testing utilities
 - Comprehensive mock reset functionality between tests
 
+**Better-Auth Logger Testing**: `frontend/tests/unit/better-auth-logger.test.ts` & `frontend/tests/integration/better-auth-logger-integration.test.ts`
+- **47 comprehensive tests** for logger adapter functionality
+- Logger integration patterns using `Reflect.get()` for private property access
+- Performance testing with high-volume logging scenarios
+- Error handling with circular references and malformed objects
+- Environment-aware configuration testing
+- See dedicated documentation: `frontend/tests/README-better-auth-logger.md`
+
 **MSW Server**: `frontend/tests/utils/msw-server.ts`
 - Mock Service Worker for API endpoint mocking
 - Handles auth, MCP server, and admin API endpoints
@@ -113,6 +121,11 @@ npm run test:ui
 # Run tests matching a pattern
 npm run test -- --grep="auth"                # Run auth-related tests
 npm run test -- --grep="API key"             # Run API key tests
+npm run test -- --grep="logger"              # Run logger-related tests
+
+# Run Better-Auth logger tests specifically
+npm run test tests/unit/better-auth-logger.test.ts
+npm run test tests/integration/better-auth-logger-integration.test.ts
 ```
 
 ## Backend Testing (Python/Pytest)
@@ -152,6 +165,42 @@ async def test_user_creation_with_valid_data():
 - Minimum coverage: 80%
 - Critical paths: 95%+ coverage
 - Exclude: migrations, **init**.py files
+
+### Logger Adapter Testing Patterns
+
+When testing logger adapters (like Better-Auth integration), use these patterns:
+
+```typescript
+// Test logger adapter functionality
+describe("Logger Adapter Integration", () => {
+  it("should adapt project logger to external interface", () => {
+    const adapterLogger = createAdapterLogger(baseLogger);
+
+    // Test interface compliance
+    expect(adapterLogger).toHaveProperty("log");
+    expect(adapterLogger).toHaveProperty("level");
+
+    // Test message formatting and context handling
+    adapterLogger.log("info", "Test message", { key: "value" });
+
+    expect(baseLoggerSpy.info).toHaveBeenCalledWith(
+      "[Adapter] Test message",
+      expect.objectContaining({
+        component: "adapter",
+        key: "value"
+      })
+    );
+  });
+});
+```
+
+**Key Testing Techniques**:
+- **Private Property Access**: Use `Reflect.get()` for testing private configuration
+- **Interface Compliance**: Verify adapter implements required interface methods
+- **Context Preservation**: Ensure context data is properly converted and preserved
+- **Performance Testing**: Validate high-volume logging scenarios (1000+ calls)
+- **Environment Awareness**: Test behavior across development/production environments
+- **Error Resilience**: Test with circular references and malformed objects
 
 ## Frontend Testing (Vitest/React Testing Library)
 

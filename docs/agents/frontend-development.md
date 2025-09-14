@@ -271,6 +271,43 @@ describe("Better-Auth API Key Integration", () => {
 - **Session Management**: Redis-backed sessions for high performance
 - **API Key Support**: Enhanced API keys with rate limiting and metadata
 - **Email Verification**: Resend integration for email verification flows
+- **Integrated Logging**: Better-Auth logger integration with project logging infrastructure
+
+#### Better-Auth Logger Integration
+The project includes a custom logger adapter for Better-Auth that integrates with the existing logging infrastructure:
+
+```typescript
+import { betterAuthLogger } from "@/lib/logger";
+
+// Usage in Better-Auth configuration
+export const auth = betterAuth({
+  // ... other config
+  logger: betterAuthLogger,  // Integrated logger
+});
+```
+
+**Key Features**:
+- **Unified Logging**: All Better-Auth logs use the same format as application logs
+- **Environment Awareness**: Respects development/production logging settings
+- **Context Preservation**: Maintains Better-Auth specific context and metadata
+- **Private Property Access**: Uses `Reflect.get()` for safe access to logger configuration
+
+**Implementation Pattern**:
+```typescript
+// Creates Better-Auth compatible logger from existing logger
+export function createBetterAuthLogger(logger: Logger) {
+  const loggerConfig = Reflect.get(logger, "config") as LoggerConfig | undefined;
+
+  return {
+    disabled: false,
+    disableColors: !(loggerConfig?.enableColors ?? true),
+    level: logger.getLevel(),
+    log: (level, message, ...args) => {
+      // Adapter implementation
+    },
+  };
+}
+```
 
 ### Testing Infrastructure (Vitest)
 - **Database Testing**: Comprehensive database optimization test suite
