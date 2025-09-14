@@ -19,3 +19,10 @@ export const signInWithGoogle = async () => {
     callbackURL: DEFAULT_LOGIN_REDIRECT,
   });
 };
+
+export const signInWithMicrosoft = async () => {
+  await authClient.signIn.social({
+    provider: "microsoft",
+    callbackURL: DEFAULT_LOGIN_REDIRECT,
+  });
+};

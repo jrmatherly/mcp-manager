@@ -35,3 +35,12 @@ export const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
     ></path>
   </svg>
 );
+
+export const MicrosoftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="18" height="18" viewBox="0 0 23 23" fill="none" {...props}>
+    <path d="M11.5 0H0V11.5H11.5V0Z" fill="#F25022"/>
+    <path d="M23 0H11.5V11.5H23V0Z" fill="#7FBA00"/>
+    <path d="M11.5 11.5H0V23H11.5V11.5Z" fill="#00A4EF"/>
+    <path d="M23 11.5H11.5V23H23V11.5Z" fill="#FFB900"/>
+  </svg>
+);
