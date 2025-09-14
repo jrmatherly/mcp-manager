@@ -54,6 +54,29 @@ export interface HttpContext {
 // AUTHENTICATION & USER TYPES
 // ============================================================================
 
+/** API key permissions for different resources */
+export interface ApiKeyPermissions {
+  servers?: ("read" | "write" | "admin")[];
+  registry?: ("read" | "write" | "admin")[];
+  admin?: ("read" | "write" | "full")[];
+}
+
+/** API key metadata configuration */
+export interface ApiKeyMetadata {
+  name?: string;
+  description?: string;
+  lastUsed?: string;
+  permissions?: ApiKeyPermissions;
+  owner?: string;
+  environment?: "development" | "staging" | "production";
+  rateLimit?: {
+    requests: number;
+    window: number; // seconds
+  };
+  allowedIps?: string[];
+  custom?: GenericRecord;
+}
+
 /** User preferences configuration */
 export interface UserPreferences {
   theme?: "light" | "dark" | "system";

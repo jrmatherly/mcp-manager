@@ -30,6 +30,7 @@ except ImportError:
     FastMCPAuthzError = Exception
     FASTMCP_AVAILABLE = False
 
+from ..auth.api_key_validator import api_key_validator
 from ..auth.utils import get_user_context_from_context, get_user_context_from_token
 from ..core.exceptions import (
     FastMCPAuthenticationError,
@@ -58,63 +59,100 @@ class AuthenticationMiddleware(BaseMiddleware):
     async def on_request(self, context: MiddlewareContext, call_next: CallNext) -> Any:
         """Verify authentication for all requests."""
 
-        # OAuth Proxy handles token validation automatically
-        # This middleware adds additional authentication logging and enforcement
+        # Dual authentication system:
+        # 1. OAuth Proxy handles OAuth token validation
+        # 2. This middleware adds API key validation from Better-Auth
 
         user_authenticated = False
         user_id = "anonymous"
         tenant_id = None
         user_context = None
+        auth_method = None
 
-        try:
-            # Try enhanced authentication pattern first
-            user_context = get_user_context_from_token()
-            user_authenticated = True
-            user_id = user_context.user_id
-            tenant_id = user_context.tenant_id
-            self.logger.info(
-                f"Authenticated request from user: {user_id} ({user_context.email}, tenant: {tenant_id})"
-            )
-        except Exception:
-            # Fall back to legacy context extraction
+        # First, check for API key authentication
+        api_key = None
+        if hasattr(context, "request") and context.request:
+            # Check both x-api-key and Authorization Bearer headers
+            api_key = context.request.headers.get("x-api-key")
+            if not api_key:
+                auth_header = context.request.headers.get("authorization", "")
+                if auth_header.startswith("Bearer mcp_"):  # Better-Auth API keys start with mcp_
+                    api_key = auth_header[7:]  # Remove "Bearer " prefix
+
+        if api_key:
             try:
-                if (
-                    hasattr(context, "fastmcp_context")
-                    and context.fastmcp_context
-                    and hasattr(context.fastmcp_context, "auth")
-                    and context.fastmcp_context.auth
-                ):
-                    token = context.fastmcp_context.auth.token
-                    if token and hasattr(token, "claims"):
-                        user_authenticated = True
-                        user_id = token.claims.get("sub", "unknown")
-                        tenant_id = token.claims.get("tid")
-                        self.logger.info(
-                            f"Authenticated request from user: {user_id} (tenant: {tenant_id}) [legacy]"
-                        )
-                    else:
-                        self.logger.warning(
-                            f"Unauthenticated request to {getattr(context, 'method', 'unknown')}"
-                        )
-                else:
-                    self.logger.warning(
-                        f"No authentication context for {getattr(context, 'method', 'unknown')}"
+                # Validate API key using Better-Auth tables
+                api_key_context = await api_key_validator.validate_api_key(api_key)
+                if api_key_context:
+                    user_authenticated = True
+                    user_id = api_key_context["user_id"]
+                    user_context = api_key_context
+                    auth_method = "api_key"
+                    self.logger.info(
+                        f"Authenticated via API key: {user_id} ({api_key_context['email']}, key: {api_key_context['api_key_name']})"
                     )
             except Exception as e:
-                self.logger.error(f"Error extracting authentication context: {e}")
-                if self.require_auth:
-                    raise FastMCPAuthenticationError(
-                        "Authentication extraction failed",
-                        auth_method="oauth_proxy",
-                        operation="authentication_middleware",
-                    ) from e
+                self.logger.warning(f"API key validation failed: {e}")
+                # Continue to OAuth validation
+
+        # If not authenticated via API key, try OAuth
+        if not user_authenticated:
+            try:
+                # Try enhanced OAuth authentication pattern
+                user_context = get_user_context_from_token()
+                user_authenticated = True
+                user_id = user_context.user_id
+                tenant_id = user_context.tenant_id
+                auth_method = "oauth"
+                self.logger.info(
+                    f"Authenticated via OAuth: {user_id} ({user_context.email}, tenant: {tenant_id})"
+                )
+            except Exception:
+                # Fall back to legacy context extraction
+                try:
+                    if (
+                        hasattr(context, "fastmcp_context")
+                        and context.fastmcp_context
+                        and hasattr(context.fastmcp_context, "auth")
+                        and context.fastmcp_context.auth
+                    ):
+                        token = context.fastmcp_context.auth.token
+                        if token and hasattr(token, "claims"):
+                            user_authenticated = True
+                            user_id = token.claims.get("sub", "unknown")
+                            tenant_id = token.claims.get("tid")
+                            auth_method = "oauth_legacy"
+                            self.logger.info(
+                                f"Authenticated via OAuth (legacy): {user_id} (tenant: {tenant_id})"
+                            )
+                        else:
+                            self.logger.warning(
+                                f"Unauthenticated request to {getattr(context, 'method', 'unknown')}"
+                            )
+                    else:
+                        self.logger.warning(
+                            f"No authentication context for {getattr(context, 'method', 'unknown')}"
+                        )
+                except Exception as e:
+                    self.logger.error(f"Error extracting authentication context: {e}")
+                    if self.require_auth:
+                        raise FastMCPAuthenticationError(
+                            "Authentication extraction failed",
+                            auth_method="oauth_proxy",
+                            operation="authentication_middleware",
+                        ) from e
+
+        # Store authentication method in context for downstream use
+        if user_authenticated and auth_method:
+            context.auth_method = auth_method
+            context.user_context = user_context
 
         # Enforce authentication requirement if configured
         if self.require_auth and not user_authenticated:
             self.logger.error("Authentication required but not provided")
             raise FastMCPAuthenticationError(
-                "Authentication required",
-                auth_method="oauth_proxy",
+                "Authentication required (OAuth or API key)",
+                auth_method="dual_auth",
                 operation="authentication_middleware",
             )
 

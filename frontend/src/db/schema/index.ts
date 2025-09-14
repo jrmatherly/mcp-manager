@@ -19,6 +19,9 @@ export * from "./mcp";
 // API tokens and rate limiting
 export * from "./api";
 
+// Better-Auth API Key table
+export * from "./better-auth-api-key";
+
 // Audit logging and compliance
 export * from "./audit";
 

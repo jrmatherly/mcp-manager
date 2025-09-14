@@ -321,34 +321,34 @@ Performance_Requirements:
 ### File Organization Pattern
 ```
 frontend/src/
-├── app/api/                 # API routes
-│   ├── auth/              # Authentication endpoints (Better-Auth)
-│   ├── keys/              # API key management endpoints
-│   └── admin/            # Admin interface endpoints
-├── components/             # UI components
-│   ├── auth/             # Authentication UI components
-│   ├── api-keys/         # API key management UI
-│   ├── admin/            # Admin dashboard components
-│   └── ui/               # Reusable UI components
-├── lib/                   # Business logic
-│   ├── auth.ts           # Better-Auth configuration
-│   ├── unified-audit-logger.ts  # Unified audit system
-│   └── rate-limit-config.ts     # Rate limiting logic
-└── types/                 # TypeScript definitions
-    ├── auth.ts           # Authentication types
-    └── api-keys.ts       # API key types
+├── app/api/                    # API routes
+│   ├── auth/                   # Authentication endpoints (Better-Auth)
+│   ├── keys/                   # API key management endpoints
+│   └── admin/                  # Admin interface endpoints
+├── components/                 # UI components
+│   ├── auth/                   # Authentication UI components
+│   ├── api-keys/               # API key management UI
+│   ├── admin/                  # Admin dashboard components
+│   └── ui/                     # Reusable UI components
+├── lib/                        # Business logic
+│   ├── auth.ts                 # Better-Auth configuration
+│   ├── unified-audit-logger.ts # Unified audit system
+│   └── rate-limit-config.ts    # Rate limiting logic
+└── types/                      # TypeScript definitions
+    ├── auth.ts                 # Authentication types
+    └── api-keys.ts             # API key types
 
 backend/src/mcp_registry_gateway/
-├── middleware/            # FastMCP middleware
+├── middleware/                 # FastMCP middleware
 │   ├── api_key_validation.py   # API key validation
 │   ├── unified_rate_limit.py   # Unified rate limiting
 │   └── audit_logger.py         # Audit logging
-├── auth/                  # Authentication utilities
-│   ├── context.py        # Unified auth context
-│   └── validators.py     # Validation helpers
-└── config/               # Configuration
-    ├── redis.py          # Redis configuration
-    └── database.py       # Database connection
+├── auth/                       # Authentication utilities
+│   ├── context.py              # Unified auth context
+│   └── validators.py           # Validation helpers
+└── config/                     # Configuration
+    ├── redis.py                # Redis configuration
+    └── database.py             # Database connection
 ```
 
 ### Database Integration Patterns

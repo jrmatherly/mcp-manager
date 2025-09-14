@@ -9,25 +9,26 @@ import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, json, uuid, integer, index, unique, decimal } from "drizzle-orm/pg-core";
 
 // API tokens for authentication and authorization
+// Better-Auth compatible table with extended enterprise features
 export const apiToken = pgTable(
   "api_token",
   {
     id: uuid("id").primaryKey().defaultRandom(),
 
-    // Token identification
+    // Token identification (MCP Registry specific)
     name: text("name").notNull(),
     description: text("description"),
-    tokenHash: text("token_hash").notNull().unique(), // SHA-256 hash of the actual token
-    tokenPrefix: text("token_prefix").notNull(), // First 8 chars for identification
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenPrefix: text("token_prefix").notNull(),
 
-    // Token ownership and scope
-    userId: text("user_id").notNull(), // References user.id
-    tenantId: text("tenant_id"), // References tenant.id, null for user-level tokens
+    // Token ownership
+    userId: text("user_id").notNull(),
+    tenantId: text("tenant_id"),
 
-    // Token permissions and scope
-    scopes: json("scopes").$type<string[]>().default([]), // e.g., ["servers:read", "servers:write"]
+    // Permissions and scope
+    scopes: json("scopes").$type<string[]>().default([]),
 
-    // Token configuration
+    // Token type
     type: text("type", {
       enum: ["personal", "service", "integration", "webhook"],
     })
@@ -35,18 +36,18 @@ export const apiToken = pgTable(
       .notNull(),
 
     // Access control
-    allowedIps: json("allowed_ips").$type<string[]>(), // IP whitelist
-    allowedDomains: json("allowed_domains").$type<string[]>(), // Domain whitelist
+    allowedIps: json("allowed_ips").$type<string[]>(),
+    allowedDomains: json("allowed_domains").$type<string[]>(),
 
-    // Rate limiting (overrides default tenant/user limits)
+    // Custom rate limiting (overrides defaults)
     rateLimit: json("rate_limit").$type<{
-      rpm?: number; // requests per minute
-      rph?: number; // requests per hour
-      rpd?: number; // requests per day
-      burst?: number; // burst capacity
+      rpm?: number;
+      rph?: number;
+      rpd?: number;
+      burst?: number;
     }>(),
 
-    // Token status and lifecycle
+    // Status
     isActive: boolean("is_active").default(true).notNull(),
 
     // Usage tracking
