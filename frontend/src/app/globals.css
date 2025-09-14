@@ -609,9 +609,17 @@
   }
 
   .glass-modal {
-    @apply glass-surface rounded-2xl p-6 shadow-2xl
+    @apply rounded-2xl p-6 shadow-2xl
            max-w-md w-full mx-4 relative
            animate-glass-reveal;
+    backdrop-filter: blur(16px) saturate(180%);
+    background: var(--color-glass-white);
+    border: 1px solid var(--color-glass-border-light);
+  }
+
+  .dark .glass-modal {
+    background: var(--color-glass-dark);
+    border-color: var(--color-glass-border-dark);
   }
 
   /* Enhanced Focus States */
