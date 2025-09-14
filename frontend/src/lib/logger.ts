@@ -10,7 +10,7 @@
  * - Performance optimized with log level checks
  */
 
-import { env } from "@/env";
+import { env } from "../env";
 
 // Types
 export type LogLevel = "debug" | "info" | "warn" | "error";

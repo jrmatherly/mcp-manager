@@ -65,7 +65,8 @@ docker-compose down -v               # Stop and remove volumes
 
 ## Testing Philosophy
 
-**When tests fail, fix the code, not the test.**
+**When tests fail, fix the test to match production code, not the other way around.**
+**Never modify production code to make tests pass - tests should adapt to the implementation.**
 
 - **Backend**: `pytest` with markers (`@pytest.mark.unit`, `@pytest.mark.integration`)
 - **Frontend**: Vitest with React Testing Library
@@ -90,6 +91,31 @@ docker-compose down -v               # Stop and remove volumes
 - `backend/.env` - Backend config (Python/FastAPI)
 - `frontend/.env.local` - Frontend Next.js config with database credentials
 - Root `.env` - Docker Compose variables
+
+### Environment Variable Configuration (T3 Env)
+The frontend uses **T3 Env** (`@t3-oss/env-nextjs`) for type-safe environment variable validation with Zod schemas.
+
+**Configuration File**: `frontend/src/env.ts`
+- Provides type-safe, validated environment variables
+- Automatic validation at build time
+- Separate server and client variable schemas
+- Full TypeScript IntelliSense support
+
+**Usage Pattern**:
+| Context | Import Pattern | Reason |
+|---------|---------------|--------|
+| **Next.js App Code** | `import { env } from "../env"` | Runs within Next.js runtime |
+| **CLI Scripts** | `import "dotenv/config"` | Runs outside Next.js via `tsx` |
+| **Drizzle Config** | `import "dotenv/config"` | Runs outside Next.js via drizzle-kit |
+
+**CLI Scripts Using dotenv/config**:
+- `src/db/setup.ts` - Database setup operations
+- `src/db/migrate.ts` - Migration management
+- `src/db/setup-views.ts` - View creation
+- `src/db/optimize.ts` - Database optimization
+- `drizzle.config.ts` - Drizzle ORM configuration
+
+These files run as standalone Node.js scripts outside the Next.js runtime and cannot access T3 Env validation.
 
 ### Database Management (Important Changes)
 - **Fully Automated Setup**: `npm run db:setup:full` now handles everything automatically

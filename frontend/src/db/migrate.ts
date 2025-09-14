@@ -5,7 +5,7 @@
  * development and production environments.
  */
 
-import { env } from "../env";
+import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
@@ -15,7 +15,7 @@ import { getSSLConfig } from "./ssl-config";
 
 // Create connection for migrations
 const migrationPool = new Pool({
-  connectionString: env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL!,
   max: 1, // Single connection for migrations
   // Parse SSL configuration from DATABASE_URL sslmode parameter
   ssl: getSSLConfig(),
@@ -93,7 +93,7 @@ export async function runMigrations() {
  * WARNING: This will drop all data!
  */
 export async function resetDatabase() {
-  if (env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production") {
     throw new Error("Database reset is not allowed in production!");
   }
 

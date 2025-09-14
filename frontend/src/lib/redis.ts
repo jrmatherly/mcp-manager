@@ -5,7 +5,7 @@
 
 import { createClient } from "redis";
 import { createLogger } from "./logger";
-import { env } from "@/env";
+import { env } from "../env";
 
 // Create Redis-specific logger
 const logger = createLogger("redis");

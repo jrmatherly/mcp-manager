@@ -42,6 +42,50 @@ npm run test tests/db-optimization.test.ts  # run database optimization tests
 npm run test tests/integration/api-key-integration.test.ts  # run API key tests
 ```
 
+## Environment Variables
+
+### T3 Env Configuration
+The frontend uses **T3 Env** (`@t3-oss/env-nextjs`) for type-safe environment variable validation.
+
+**Configuration**: `frontend/src/env.ts`
+- Type-safe environment variables with Zod validation
+- Separate server and client schemas
+- Build-time validation
+- Full TypeScript IntelliSense
+
+### Usage Patterns
+
+| File Type | Import Pattern | Example |
+|-----------|---------------|---------|
+| **Next.js App Code** | `import { env } from "../env"` | Components, API routes, lib files |
+| **CLI Scripts** | `import "dotenv/config"` | setup.ts, migrate.ts, optimize.ts |
+| **Drizzle Config** | `import "dotenv/config"` | drizzle.config.ts |
+
+### CLI Scripts
+These files run outside Next.js runtime and use `dotenv/config`:
+- `src/db/setup.ts` - Database setup operations
+- `src/db/migrate.ts` - Migration management
+- `src/db/setup-views.ts` - View creation
+- `src/db/optimize.ts` - Database optimization
+- `drizzle.config.ts` - Drizzle ORM configuration
+
+### Example Usage
+
+```typescript
+// In Next.js app code
+import { env } from "@/env";
+
+// Access typed environment variables
+const dbUrl = env.DATABASE_URL; // Type-safe with validation
+const isProduction = env.NODE_ENV === "production";
+
+// In CLI scripts
+import "dotenv/config";
+
+// Access environment variables directly
+const dbUrl = process.env.DATABASE_URL!;
+```
+
 ## Code Style
 
 ### Import Conventions

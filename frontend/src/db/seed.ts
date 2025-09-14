@@ -5,7 +5,8 @@
  * for development and testing environments.
  */
 
-import { env } from "../env";
+// Note: Environment variables are accessed via process.env
+// This file is imported by migrate.ts which runs as a CLI script
 import type { drizzle } from "drizzle-orm/node-postgres";
 import { user, tenant, tenantMember, systemConfig, featureFlag, rateLimitConfig, mcpServer } from "./schema/index";
 import { dbLogger } from "../lib/logger";
@@ -176,7 +177,7 @@ async function seedRateLimitConfig(db: DatabaseConnection) {
  * Seed demo tenant and users (development only)
  */
 async function seedDemoData(db: DatabaseConnection) {
-  if (env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production") {
     return;
   }
 

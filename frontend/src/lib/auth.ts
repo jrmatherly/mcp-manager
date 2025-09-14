@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { env } from "@/env";
+import { env } from "../env";
 import * as schema from "@/db/schema";
 import { apiKey as apiKeyTable } from "@/db/schema/better-auth-api-key";
 import { sendEmail } from "@/lib/email";

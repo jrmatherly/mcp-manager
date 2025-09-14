@@ -14,7 +14,7 @@ export const env = createEnv({
     // Database Configuration
     DATABASE_URL: z
       .string()
-      .url()
+      .url("Invalid PostgreSQL connection URL")
       .describe("PostgreSQL connection string"),
 
     DB_SSL: z
@@ -36,7 +36,7 @@ export const env = createEnv({
 
     BETTER_AUTH_URL: z
       .string()
-      .url()
+      .url("Invalid Better Auth URL")
       .default("http://localhost:3000")
       .describe("Better Auth callback URL"),
 
@@ -87,7 +87,7 @@ export const env = createEnv({
     // Redis Configuration (optional)
     REDIS_URL: z
       .string()
-      .url()
+      .url("Invalid Redis URL")
       .optional()
       .describe("Redis connection URL for caching"),
 
@@ -126,7 +126,7 @@ export const env = createEnv({
     // Public App Configuration
     NEXT_PUBLIC_APP_URL: z
       .string()
-      .url()
+      .url("Invalid app URL")
       .optional()
       .default("http://localhost:3000")
       .describe("Public app URL"),

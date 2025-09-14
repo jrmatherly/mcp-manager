@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { env } from "@/env";
+import { env } from "../env";
 
 // Initialize Resend with API key or placeholder for development
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;

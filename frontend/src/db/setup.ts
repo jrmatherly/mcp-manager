@@ -5,7 +5,7 @@
  * Replaces the Python backend/scripts/setup_database.py script.
  */
 
-import { env } from "../env";
+import "dotenv/config";
 import { Client, Pool } from "pg";
 import { createClient } from "redis";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -82,7 +82,7 @@ function parseDatabaseUrl(url: string) {
  * Drop PostgreSQL database if it exists
  */
 export async function dropDatabaseIfExists(): Promise<boolean> {
-  const databaseUrl = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     logger.error("DATABASE_URL not set");
     return false;
@@ -139,7 +139,7 @@ export async function dropDatabaseIfExists(): Promise<boolean> {
  * Create PostgreSQL database if it doesn't exist
  */
 export async function createDatabaseIfNotExists(): Promise<boolean> {
-  const databaseUrl = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     logger.error("DATABASE_URL not set");
     return false;
@@ -190,7 +190,7 @@ export async function createDatabaseIfNotExists(): Promise<boolean> {
  * Test PostgreSQL connection with the application database
  */
 export async function testPostgreSQLConnection(): Promise<boolean> {
-  const databaseUrl = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     logger.error("DATABASE_URL not set");
     return false;
@@ -227,7 +227,7 @@ export async function testPostgreSQLConnection(): Promise<boolean> {
  * Test Redis connection
  */
 export async function testRedisConnection(): Promise<boolean> {
-  const redisUrl = env.REDIS_URL || "redis://localhost:6379";
+  const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
   const urlObj = new URL(redisUrl);
 
   logger.info(`🧪 Testing Redis connection to ${urlObj.hostname}:${urlObj.port}...`);
@@ -276,7 +276,7 @@ export async function testRedisConnection(): Promise<boolean> {
  * Verify that all expected views were created
  */
 export async function verifyDatabaseViews(): Promise<boolean> {
-  const databaseUrl = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     logger.error("DATABASE_URL not set");
     return false;
@@ -369,7 +369,7 @@ export async function verifyDatabaseViews(): Promise<boolean> {
  * Verify that all expected tables were created
  */
 export async function verifyDatabaseSchema(): Promise<boolean> {
-  const databaseUrl = env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     logger.error("DATABASE_URL not set");
     return false;
@@ -507,7 +507,7 @@ async function applyOptimizationFiles(): Promise<boolean> {
   const optimizationFiles = ["01_extensions.sql", "02_indexes.sql", "03_functions.sql"];
 
   const pool = new Pool({
-    connectionString: env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL!,
     ssl: getSSLConfig(),
   });
 

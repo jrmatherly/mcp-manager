@@ -5,7 +5,7 @@
  * This makes it easier to handle errors and debug issues
  */
 
-import { env } from "../env";
+import "dotenv/config";
 import { Pool } from "pg";
 import { createLogger } from "../lib/logger";
 import { getSSLConfig } from "./ssl-config";
@@ -563,7 +563,7 @@ export async function createViews(): Promise<{
   errors: Record<string, string>;
 }> {
   const pool = new Pool({
-    connectionString: env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL!,
     ssl: getSSLConfig(),
   });
 
@@ -632,7 +632,7 @@ export async function createViews(): Promise<{
  */
 export async function dropViews(): Promise<boolean> {
   const pool = new Pool({
-    connectionString: env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL!,
     ssl: getSSLConfig(),
   });
 
@@ -672,7 +672,7 @@ export async function dropViews(): Promise<boolean> {
  */
 export async function refreshMaterializedViews(): Promise<boolean> {
   const pool = new Pool({
-    connectionString: env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL!,
     ssl: getSSLConfig(),
   });
 
