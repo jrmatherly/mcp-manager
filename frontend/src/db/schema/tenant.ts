@@ -203,7 +203,7 @@ export const tenantInvitation = pgTable(
       .notNull(),
 
     // Invitation lifecycle
-    token: text("token").notNull().unique(),
+    token: text("token").notNull(),
     status: text("status", {
       enum: ["pending", "accepted", "expired", "revoked"],
     })

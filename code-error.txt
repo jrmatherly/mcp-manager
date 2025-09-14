@@ -1,0 +1,20 @@
+[{
+	"resource": "/Users/jason/dev/AI/mcp-manager/frontend/src/db/setup-views.ts",
+	"owner": "eslint8",
+	"code": {
+		"value": "no-console",
+		"target": {
+			"$mid": 1,
+			"path": "/docs/latest/rules/no-console",
+			"scheme": "https",
+			"authority": "eslint.org"
+		}
+	},
+	"severity": 4,
+	"message": "Unexpected console statement.",
+	"source": "eslint",
+	"startLineNumber": 611,
+	"startColumn": 7,
+	"endLineNumber": 611,
+	"endColumn": 18
+}]

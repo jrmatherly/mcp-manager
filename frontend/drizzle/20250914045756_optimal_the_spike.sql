@@ -94,8 +94,8 @@ CREATE TABLE "verification" (
 	"created_at" timestamp with time zone,
 	"updated_at" timestamp with time zone,
 	"type" text NOT NULL,
-	"attempts" text DEFAULT '0',
-	"max_attempts" text DEFAULT '3',
+	"attempts" integer DEFAULT 0,
+	"max_attempts" integer DEFAULT 3,
 	"is_used" boolean DEFAULT false
 );
 --> statement-breakpoint
@@ -128,8 +128,7 @@ CREATE TABLE "tenant" (
 	"contact_email" text,
 	"contact_phone" text,
 	"support_plan" text DEFAULT 'community',
-	CONSTRAINT "tenant_slug_unique" UNIQUE("slug"),
-	CONSTRAINT "tenant_slug_unique_idx" UNIQUE("slug")
+	CONSTRAINT "tenant_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "tenant_invitation" (
@@ -146,7 +145,6 @@ CREATE TABLE "tenant_invitation" (
 	"invited_by" text NOT NULL,
 	"message" text,
 	CONSTRAINT "tenant_invitation_token_unique" UNIQUE("token"),
-	CONSTRAINT "tenant_invitation_token_unique_idx" UNIQUE("token"),
 	CONSTRAINT "tenant_invitation_tenant_email_unique_idx" UNIQUE("tenant_id","email")
 );
 --> statement-breakpoint
@@ -300,8 +298,7 @@ CREATE TABLE "api_token" (
 	"expires_at" timestamp with time zone,
 	"created_at" timestamp with time zone NOT NULL,
 	"updated_at" timestamp with time zone NOT NULL,
-	CONSTRAINT "api_token_token_hash_unique" UNIQUE("token_hash"),
-	CONSTRAINT "api_token_hash_unique" UNIQUE("token_hash")
+	CONSTRAINT "api_token_token_hash_unique" UNIQUE("token_hash")
 );
 --> statement-breakpoint
 CREATE TABLE "api_usage" (
@@ -543,9 +540,7 @@ CREATE TABLE "feature_flag" (
 	"created_at" timestamp with time zone NOT NULL,
 	"updated_at" timestamp with time zone NOT NULL,
 	CONSTRAINT "feature_flag_name_unique" UNIQUE("name"),
-	CONSTRAINT "feature_flag_key_unique" UNIQUE("key"),
-	CONSTRAINT "feature_flag_name_unique_idx" UNIQUE("name"),
-	CONSTRAINT "feature_flag_key_unique_idx" UNIQUE("key")
+	CONSTRAINT "feature_flag_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
 CREATE TABLE "feature_flag_evaluation" (
@@ -631,8 +626,7 @@ CREATE TABLE "system_config" (
 	"change_reason" text,
 	"created_at" timestamp with time zone NOT NULL,
 	"updated_at" timestamp with time zone NOT NULL,
-	CONSTRAINT "system_config_key_unique" UNIQUE("key"),
-	CONSTRAINT "system_config_key_unique_idx" UNIQUE("key")
+	CONSTRAINT "system_config_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
 CREATE TABLE "circuit_breakers" (
@@ -693,8 +687,7 @@ CREATE TABLE "data_retention_policies" (
 	"last_deleted_count" integer DEFAULT 0,
 	"avg_execution_time_ms" real,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "data_retention_policies_name_unique" UNIQUE("name")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "enhanced_api_keys" (
@@ -724,8 +717,7 @@ CREATE TABLE "enhanced_api_keys" (
 	"is_locked" boolean DEFAULT false,
 	"locked_until" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "enhanced_api_keys_key_hash_unique" UNIQUE("key_hash")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "fastmcp_audit_log" (
@@ -763,8 +755,7 @@ CREATE TABLE "materialized_views" (
 	"row_count" integer,
 	"size_bytes" bigint,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "materialized_views_name_unique" UNIQUE("name")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "performance_alerts" (
@@ -808,8 +799,7 @@ CREATE TABLE "request_logs" (
 	"error_message" text,
 	"request_metadata" json DEFAULT '{}'::json,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "request_logs_request_id_unique" UNIQUE("request_id")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "request_queues" (
@@ -883,8 +873,7 @@ CREATE TABLE "sessions" (
 	"is_active" boolean DEFAULT true,
 	"last_activity" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "sessions_session_token_unique" UNIQUE("session_token")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

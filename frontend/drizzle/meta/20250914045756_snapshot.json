@@ -1,5 +1,5 @@
 {
-  "id": "cbe303ab-da68-4333-8704-297871cc9f76",
+  "id": "a1cfdff2-c779-494b-9ecb-15a176d883d8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -889,17 +889,17 @@
         },
         "attempts": {
           "name": "attempts",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "default": "'0'"
+          "default": 0
         },
         "max_attempts": {
           "name": "max_attempts",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "default": "'3'"
+          "default": 3
         },
         "is_used": {
           "name": "is_used",
@@ -1251,13 +1251,6 @@
           "columns": [
             "slug"
           ]
-        },
-        "tenant_slug_unique_idx": {
-          "name": "tenant_slug_unique_idx",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
         }
       },
       "policies": {},
@@ -1410,13 +1403,6 @@
       "uniqueConstraints": {
         "tenant_invitation_token_unique": {
           "name": "tenant_invitation_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
-        },
-        "tenant_invitation_token_unique_idx": {
-          "name": "tenant_invitation_token_unique_idx",
           "nullsNotDistinct": false,
           "columns": [
             "token"
@@ -3244,13 +3230,6 @@
       "uniqueConstraints": {
         "api_token_token_hash_unique": {
           "name": "api_token_token_hash_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
-        },
-        "api_token_hash_unique": {
-          "name": "api_token_hash_unique",
           "nullsNotDistinct": false,
           "columns": [
             "token_hash"
@@ -5710,20 +5689,6 @@
           "columns": [
             "key"
           ]
-        },
-        "feature_flag_name_unique_idx": {
-          "name": "feature_flag_name_unique_idx",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        },
-        "feature_flag_key_unique_idx": {
-          "name": "feature_flag_key_unique_idx",
-          "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
         }
       },
       "policies": {},
@@ -6536,13 +6501,6 @@
           "columns": [
             "key"
           ]
-        },
-        "system_config_key_unique_idx": {
-          "name": "system_config_key_unique_idx",
-          "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
         }
       },
       "policies": {},
@@ -7143,15 +7101,7 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_retention_policies_name_unique": {
-          "name": "data_retention_policies_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -7503,15 +7453,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "enhanced_api_keys_key_hash_unique": {
-          "name": "enhanced_api_keys_key_hash_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "key_hash"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -7956,15 +7898,7 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "materialized_views_name_unique": {
-          "name": "materialized_views_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -8533,15 +8467,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "request_logs_request_id_unique": {
-          "name": "request_logs_request_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "request_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -9383,15 +9309,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_session_token_unique": {
-          "name": "sessions_session_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "session_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

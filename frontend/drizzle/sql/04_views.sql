@@ -21,7 +21,11 @@ SELECT
     ms.health_status,
     ms.last_health_check,
     ms.avg_response_time,
-    ms.success_rate,
+    CASE
+        WHEN (ms.request_count + ms.error_count) > 0
+        THEN ROUND((ms.request_count::numeric / (ms.request_count + ms.error_count)::numeric) * 100, 2)
+        ELSE 100.00
+    END as success_rate,
     ms.uptime,
     ms.request_count,
     t.name as tenant_name,
@@ -42,9 +46,9 @@ GROUP BY
     ms.health_status,
     ms.last_health_check,
     ms.avg_response_time,
-    ms.success_rate,
     ms.uptime,
     ms.request_count,
+    ms.error_count,
     t.name,
     t.status;
 
@@ -88,7 +92,7 @@ COMMENT ON VIEW v_active_sessions IS 'Currently active user sessions with user a
 
 CREATE OR REPLACE VIEW v_api_usage_stats AS
 SELECT
-    DATE_TRUNC ('hour', au.timestamp) as hour_bucket,
+    DATE_TRUNC ('hour', au.requested_at) as hour_bucket,
     au.path,
     au.method,
     COUNT(*) as request_count,
@@ -122,9 +126,9 @@ SELECT
     COUNT(DISTINCT au.ip_address) as unique_ips
 FROM api_usage au
 WHERE
-    au.timestamp > NOW() - INTERVAL '24 hours'
+    au.requested_at > NOW() - INTERVAL '24 hours'
 GROUP BY
-    DATE_TRUNC ('hour', au.timestamp),
+    DATE_TRUNC ('hour', au.requested_at),
     au.path,
     au.method
 ORDER BY hour_bucket DESC, request_count DESC;
@@ -142,26 +146,26 @@ SELECT
     mt.description,
     ms.name as server_name,
     ms.health_status as server_health,
-    mt.total_calls,
-    mt.success_count,
+    mt.call_count as total_calls,
+    CASE
+        WHEN mt.call_count > mt.error_count
+        THEN mt.call_count - mt.error_count
+        ELSE 0
+    END as success_count,
     mt.error_count,
     CASE
-        WHEN mt.total_calls > 0 THEN
-            ROUND((mt.success_count::numeric / mt.total_calls::numeric) * 100, 2)
+        WHEN mt.call_count > 0 THEN
+            ROUND(((mt.call_count - mt.error_count)::numeric / mt.call_count::numeric) * 100, 2)
         ELSE 0
     END as success_rate,
     mt.avg_execution_time,
-    mt.last_used,
+    mt.last_used_at as last_used,
     mt.created_at,
-    ARRAY_AGG(DISTINCT mt.tags) as tags
+    mt.tags as tags
 FROM mcp_tool mt
 JOIN mcp_server ms ON mt.server_id = ms.id
-WHERE mt.total_calls > 0
-GROUP BY
-    mt.id, mt.name, mt.description, ms.name, ms.health_status,
-    mt.total_calls, mt.success_count, mt.error_count,
-    mt.avg_execution_time, mt.last_used, mt.created_at
-ORDER BY mt.total_calls DESC;
+WHERE mt.call_count > 0
+ORDER BY mt.call_count DESC;
 
 COMMENT ON VIEW v_tool_performance IS 'Tool usage and performance metrics';
 
@@ -184,7 +188,7 @@ SELECT
     ) as active_servers,
     COUNT(DISTINCT at.id) as api_token_count,
     COALESCE(
-        SUM(aus.daily_request_count),
+        SUM(aus.total_requests),
         0
     ) as total_api_calls_today,
     COALESCE(AVG(ms.avg_response_time), 0) as avg_response_time,
@@ -201,7 +205,8 @@ FROM
     LEFT JOIN api_token at ON t.id = at.tenant_id
     AND at.is_active = true
     LEFT JOIN api_usage_stats aus ON t.id = aus.tenant_id
-    AND aus.date = CURRENT_DATE
+    AND aus.period_type = 'day'
+    AND aus.period_start = CURRENT_DATE
 GROUP BY
     t.id,
     t.name,
@@ -220,27 +225,27 @@ COMMENT ON VIEW v_tenant_activity IS 'Tenant activity summary with usage metrics
 CREATE OR REPLACE VIEW v_security_audit AS
 SELECT
     al.id as audit_id,
-    al.timestamp,
+    al.occurred_at as timestamp,
     al.event_type,
     al.action,
-    al.user_id,
+    al.actor_id as user_id,
     u.email as user_email,
     u.role as user_role,
     al.resource_type,
     al.resource_id,
     al.success,
     al.error_message,
-    al.ip_address,
-    al.user_agent,
+    al.actor_ip as ip_address,
+    al.actor_user_agent as user_agent,
     al.risk_level,
     t.name as tenant_name,
     al.metadata
 FROM audit_log al
-    LEFT JOIN "user" u ON al.user_id = u.id
+    LEFT JOIN "user" u ON al.actor_id = u.id
     LEFT JOIN tenant t ON al.tenant_id = t.id
 WHERE
-    al.timestamp > NOW() - INTERVAL '7 days'
-ORDER BY al.timestamp DESC;
+    al.occurred_at > NOW() - INTERVAL '7 days'
+ORDER BY al.occurred_at DESC;
 
 COMMENT ON VIEW v_security_audit IS 'Security audit trail for the last 7 days';
 
@@ -253,12 +258,11 @@ SELECT
     rlc.id as config_id,
     rlc.name as limit_name,
     rlc.scope,
-    rlc.identifier,
-    rlc.max_requests,
-    rlc.time_window_seconds,
-    rlc.enabled,
+    rlc.rules::text as rules,
+    rlc.priority,
+    rlc.is_active,
     COUNT(rlv.id) as violation_count_24h,
-    MAX(rlv.timestamp) as last_violation,
+    MAX(rlv.violated_at) as last_violation,
     CASE
         WHEN COUNT(rlv.id) > 10 THEN 'HIGH'
         WHEN COUNT(rlv.id) > 5 THEN 'MEDIUM'
@@ -268,20 +272,18 @@ SELECT
 FROM
     rate_limit_config rlc
     LEFT JOIN rate_limit_violation rlv ON (
-        rlc.scope = rlv.scope
-        AND rlc.identifier = rlv.identifier
-        AND rlv.timestamp > NOW() - INTERVAL '24 hours'
+        rlv.rule_id = rlc.id
+        AND rlv.violated_at > NOW() - INTERVAL '24 hours'
     )
 WHERE
-    rlc.enabled = true
+    rlc.is_active = true
 GROUP BY
     rlc.id,
     rlc.name,
     rlc.scope,
-    rlc.identifier,
-    rlc.max_requests,
-    rlc.time_window_seconds,
-    rlc.enabled
+    rlc.rules::text,
+    rlc.priority,
+    rlc.is_active
 ORDER BY violation_count_24h DESC;
 
 COMMENT ON VIEW v_rate_limit_status IS 'Rate limiting configuration and violation status';
@@ -348,7 +350,7 @@ COMMENT ON VIEW v_system_health_dashboard IS 'Comprehensive system health metric
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_daily_usage_summary AS
 SELECT
-    DATE(au.timestamp) as usage_date,
+    DATE(au.requested_at) as usage_date,
     t.id as tenant_id,
     t.name as tenant_name,
     COUNT(*) as total_requests,
@@ -370,14 +372,14 @@ SELECT
         WHERE
             au.status_code >= 400
     ) as error_count,
-    SUM(au.response_size_bytes) as total_bytes_served
+    SUM(au.response_size) as total_bytes_served
 FROM api_usage au
     LEFT JOIN "user" u ON au.user_id = u.id
     LEFT JOIN tenant t ON u.tenant_id = t.id
 WHERE
-    au.timestamp >= CURRENT_DATE - INTERVAL '30 days'
+    au.requested_at >= CURRENT_DATE - INTERVAL '30 days'
 GROUP BY
-    DATE(au.timestamp),
+    DATE(au.requested_at),
     t.id,
     t.name
 ORDER BY usage_date DESC, total_requests DESC;

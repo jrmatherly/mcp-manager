@@ -43,7 +43,7 @@ export const sessions = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id),
-    sessionToken: varchar("session_token", { length: 255 }).notNull().unique(),
+    sessionToken: varchar("session_token", { length: 255 }).notNull(),
 
     // Session metadata
     ipAddress: varchar("ip_address", { length: 45 }), // IPv6 max length
@@ -83,7 +83,7 @@ export const enhancedApiKeys = pgTable(
     description: text("description"),
 
     // Key security
-    keyHash: varchar("key_hash", { length: 255 }).notNull().unique(),
+    keyHash: varchar("key_hash", { length: 255 }).notNull(),
     keyPrefix: varchar("key_prefix", { length: 20 }).notNull(),
     salt: varchar("salt", { length: 255 }).notNull(),
 
@@ -411,7 +411,7 @@ export const dataRetentionPolicies = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Policy identification
-    name: varchar("name", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
 
     // Target data
@@ -455,7 +455,7 @@ export const materializedViews = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // View identification
-    name: varchar("name", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
 
     // View definition
@@ -497,7 +497,7 @@ export const requestLogs = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Request identification
-    requestId: varchar("request_id", { length: 255 }).notNull().unique(),
+    requestId: varchar("request_id", { length: 255 }).notNull(),
 
     // Source
     userId: text("user_id").references(() => user.id),
