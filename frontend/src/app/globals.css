@@ -691,20 +691,23 @@
 
 /* Card flip animation (3D transforms) */
 .flip-card {
-  @apply relative w-full h-96 perspective-1000 overflow-visible;
+  @apply relative w-full h-96 overflow-visible;
+  perspective: 1000px;
 }
 
 .flip-card-inner {
-  @apply relative w-full h-full transition-transform duration-700 preserve-3d;
+  @apply relative w-full h-full transition-transform duration-700;
+  transform-style: preserve-3d;
 }
 
 .flip-card.flipped .flip-card-inner {
-  @apply rotate-y-180;
+  transform: rotateY(180deg);
 }
 
 .flip-card-front,
 .flip-card-back {
-  @apply absolute w-full h-full backface-hidden backdrop-blur-lg rounded-xl transition-all duration-300 ease-out;
+  @apply absolute w-full h-full backdrop-blur-lg rounded-xl transition-all duration-300 ease-out;
+  backface-visibility: hidden;
   background: var(--color-glass-white);
   border: 1px solid var(--color-glass-border-light);
   box-shadow: var(--shadow-glass);
@@ -718,7 +721,7 @@
 }
 
 .flip-card-back {
-  @apply rotate-y-180;
+  transform: rotateY(180deg);
 }
 
 /* ============================================ */
