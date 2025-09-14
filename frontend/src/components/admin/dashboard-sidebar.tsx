@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Users, Settings, LogOut, GalleryVerticalEnd } from "lucide-react";
+import { Users, Settings, LogOut, GalleryVerticalEnd, Bug } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 import {
@@ -22,6 +22,11 @@ const sidebarNavItems = [
     href: "/admin/users",
     icon: Users,
     label: "Users",
+  },
+  {
+    href: "/admin/debug/azure-roles",
+    icon: Bug,
+    label: "Azure Role Debug",
   },
 ];
 

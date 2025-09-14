@@ -8,6 +8,19 @@ import { betterAuth } from "better-auth";
 import { admin, apiKey } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import {
+  ADMIN_CONFIG,
+  API_KEY_CONFIG,
+  EMAIL_CONFIG,
+  ACCOUNT_CONFIG,
+  OAUTH_HOOKS,
+  PROVIDER_CONFIGS,
+  validateProviderConfig,
+} from "./auth/config";
+import { AZURE_OAUTH_CONFIG, GOOGLE_OAUTH_CONFIG, GITHUB_OAUTH_CONFIG } from "./auth/providers";
+
+// Validate provider configuration on module load
+validateProviderConfig();
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -20,15 +33,16 @@ export const auth = betterAuth({
   }),
   // Redis secondary storage for high-performance caching
   secondaryStorage: redisSecondaryStorage,
-  account: {
-    accountLinking: {
-      enabled: true,
-    },
+  // OAuth hooks for provider-specific handling
+  hooks: {
+    after: OAUTH_HOOKS.after,
   },
+  // Account linking configuration
+  account: ACCOUNT_CONFIG,
+  // Email and password configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
-    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
+    ...EMAIL_CONFIG,
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
@@ -38,66 +52,41 @@ export const auth = betterAuth({
         text: `Click the link to verify your email: ${url}`,
       });
     },
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
+    ...EMAIL_CONFIG,
   },
   socialProviders: {
-    github: env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    } : undefined,
-    google: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
-      prompt: "select_account",
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    } : undefined,
-    microsoft: env.AZURE_CLIENT_ID && env.AZURE_CLIENT_SECRET ? {
-      clientId: env.AZURE_CLIENT_ID,
-      clientSecret: env.AZURE_CLIENT_SECRET,
-      // Use 'common' to support both personal and organizational accounts
-      // or specify your tenant ID for organization-only access
-      tenantId: env.AZURE_TENANT_ID,
-      // Standard Microsoft Authentication authority
-      authority: "https://login.microsoftonline.com",
-      // Forces account selection screen for better UX
-      prompt: "select_account",
-    } : undefined,
+    github:
+      env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+        ? {
+            clientId: env.GITHUB_CLIENT_ID,
+            clientSecret: env.GITHUB_CLIENT_SECRET,
+            ...GITHUB_OAUTH_CONFIG,
+          }
+        : undefined,
+    google:
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            ...GOOGLE_OAUTH_CONFIG,
+          }
+        : undefined,
+    microsoft:
+      env.AZURE_CLIENT_ID && env.AZURE_CLIENT_SECRET
+        ? {
+            clientId: env.AZURE_CLIENT_ID,
+            clientSecret: env.AZURE_CLIENT_SECRET,
+            tenantId: PROVIDER_CONFIGS.azure?.tenantId || env.AZURE_TENANT_ID,
+            ...AZURE_OAUTH_CONFIG,
+          }
+        : undefined,
   },
   plugins: [
     nextCookies(),
     admin({
-      defaultRole: "user",
-      adminRoles: ["admin"],
+      ...ADMIN_CONFIG,
+      adminRoles: [...ADMIN_CONFIG.adminRoles],
     }),
-    apiKey({
-      // Custom header configuration for API key authentication
-      apiKeyHeaders: ["x-api-key", "authorization"],
-
-      // Custom getter to handle Bearer tokens and x-api-key headers
-      customAPIKeyGetter: (ctx) => {
-        if (!ctx.request) {
-          return null;
-        }
-        const authHeader = ctx.request.headers.get("authorization");
-        if (authHeader?.startsWith("Bearer ")) {
-          return authHeader.substring(7);
-        }
-        return ctx.request.headers.get("x-api-key");
-      },
-
-      // Default configuration for new API keys
-      defaultKeyLength: 32,
-      defaultPrefix: "mcp_",
-
-      // Rate limiting defaults (can be overridden per token)
-      rateLimit: {
-        enabled: true,
-        maxRequests: 1000,
-        timeWindow: 1000 * 60 * 60, // 1 hour in milliseconds
-      },
-
-      // Enable metadata and permissions
-      enableMetadata: true,
-    }),
+    apiKey(API_KEY_CONFIG),
   ],
 });
