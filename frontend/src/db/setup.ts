@@ -64,7 +64,6 @@ function splitSQLStatements(sql: string): string[] {
   return statements;
 }
 
-
 /**
  * Parse database URL to extract components
  */
@@ -311,8 +310,8 @@ export async function verifyDatabaseViews(): Promise<boolean> {
     `);
 
     const views = viewResult.rows.map((row: Record<string, unknown>) => ({
-      name: String(row.view_name).replace('public.', ''),
-      type: String(row.view_type)
+      name: String(row.view_name).replace("public.", ""),
+      type: String(row.view_type),
     }));
 
     // Expected views from 04_views.sql
@@ -331,7 +330,7 @@ export async function verifyDatabaseViews(): Promise<boolean> {
 
     logger.info(`   Found ${views.length} views`);
 
-    const foundViewNames = views.map(v => v.name);
+    const foundViewNames = views.map((v) => v.name);
     const missingViews = expectedViews.filter((view) => !foundViewNames.includes(view));
     const extraViews = foundViewNames.filter((view) => !expectedViews.includes(view));
 
@@ -344,8 +343,8 @@ export async function verifyDatabaseViews(): Promise<boolean> {
     }
 
     // Log view details
-    views.forEach(view => {
-      const symbol = view.type === 'materialized_view' ? '📊' : '👁️';
+    views.forEach((view) => {
+      const symbol = view.type === "materialized_view" ? "📊" : "👁️";
       logger.info(`   ${symbol} ${view.name} (${view.type})`);
     });
 

@@ -30,12 +30,14 @@ export interface RequestPerformanceSummary {
 }
 
 export interface TenantUsageSummary {
-  total_requests: number;
-  unique_users: number;
-  unique_servers: number;
-  avg_duration_ms: number | null;
-  error_rate: number | null;
-  total_data_transferred: number;
+  total_servers: number;
+  active_servers: number;
+  total_tools: number;
+  total_resources: number;
+  total_api_calls: number;
+  avg_response_time: number | null;
+  total_users: number;
+  active_sessions: number;
 }
 
 export interface ApiUsageStatistics {
@@ -114,8 +116,8 @@ export async function getRequestPerformanceSummary(hours: number = 24): Promise<
 /**
  * Get tenant usage summary for a specific tenant
  */
-export async function getTenantUsageSummary(tenantId: string, hours: number = 24): Promise<TenantUsageSummary[]> {
-  const result = await db.execute(sql`SELECT * FROM get_tenant_usage_summary(${tenantId}, ${hours})`);
+export async function getTenantUsageSummary(tenantId: string): Promise<TenantUsageSummary[]> {
+  const result = await db.execute(sql`SELECT * FROM get_tenant_usage_summary(${tenantId})`);
   return result.rows as unknown as TenantUsageSummary[];
 }
 

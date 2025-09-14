@@ -147,8 +147,10 @@ export const verification = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).$defaultFn(() => new Date()),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$defaultFn(() => new Date()),
 
-    // Extended verification fields
-    type: text("type", { enum: ["email", "phone", "password_reset", "two_factor"] }).notNull(),
+    // Extended verification fields - made nullable for Better-Auth compatibility
+    // Better-Auth doesn't support additionalFields for verification table,
+    // so these must be nullable to avoid conflicts with core authentication flows
+    type: text("type", { enum: ["email", "phone", "password_reset", "two_factor", "oauth_state"] }),
     attempts: integer("attempts").default(0),
     maxAttempts: integer("max_attempts").default(3),
     isUsed: boolean("is_used").default(false),

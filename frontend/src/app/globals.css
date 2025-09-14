@@ -172,8 +172,11 @@
   .dark body {
     background-image: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f1419 100%);
   }
-  html {
-    scroll-behavior: smooth;
+  /* Only apply smooth scrolling for users who haven't set a preference for reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 }
 

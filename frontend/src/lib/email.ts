@@ -18,7 +18,7 @@ export const sendEmail = async (payload: { to: string; subject: string; text: st
 
   try {
     const response = await resend.emails.send({
-      from: "Zexa Technologies <no-reply@zexa.app>",
+      from: "MatherlyNet <no-reply@matherly.net>",
       ...payload,
     });
 

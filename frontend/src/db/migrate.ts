@@ -24,6 +24,40 @@ const migrationPool = new Pool({
 const migrationDb = drizzle(migrationPool);
 
 /**
+ * Execute SQL with idempotent error handling
+ * Handles "already exists" and "duplicate" errors gracefully
+ */
+export async function executeIdempotent(sql: string, description?: string): Promise<void> {
+  try {
+    await migrationDb.execute(sql);
+    if (description) {
+      dbLogger.info(`✅ ${description}`);
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Handle common idempotent cases
+    if (
+      errorMessage.includes("already exists") ||
+      errorMessage.includes("duplicate key") ||
+      errorMessage.includes("already defined") ||
+      errorMessage.includes("relation") && errorMessage.includes("already exists")
+    ) {
+      if (description) {
+        dbLogger.info(`⏭️  ${description} (already exists)`);
+      }
+      return; // Skip silently
+    }
+
+    // Re-throw unexpected errors
+    if (description) {
+      dbLogger.logError(error, `Failed to ${description}`);
+    }
+    throw error;
+  }
+}
+
+/**
  * Run pending migrations
  */
 export async function runMigrations() {
@@ -36,6 +70,17 @@ export async function runMigrations() {
 
     dbLogger.info("Migrations completed successfully");
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Check if it's an idempotent error (already applied)
+    if (
+      errorMessage.includes("already exists") ||
+      errorMessage.includes("duplicate key")
+    ) {
+      dbLogger.info("⏭️  All migrations already applied");
+      return;
+    }
+
     dbLogger.logError(error, "Migration failed");
     throw error;
   } finally {

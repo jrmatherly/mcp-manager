@@ -187,10 +187,7 @@ SELECT
             ms.status = 'active'
     ) as active_servers,
     COUNT(DISTINCT at.id) as api_token_count,
-    COALESCE(
-        SUM(aus.total_requests),
-        0
-    ) as total_api_calls_today,
+    COALESCE(SUM(aus.total_requests), 0) as total_api_calls_today,
     COALESCE(AVG(ms.avg_response_time), 0) as avg_response_time,
     MAX(u.last_login_at) as last_user_activity,
     t.created_at as tenant_created,
@@ -308,7 +305,7 @@ api_metrics AS (
         AVG(response_time) as avg_api_response,
         COUNT(*) FILTER (WHERE status_code >= 400) as errors_24h
     FROM api_usage
-    WHERE timestamp > NOW() - INTERVAL '24 hours'
+    WHERE requested_at > NOW() - INTERVAL '24 hours'
 ),
 session_metrics AS (
     SELECT
@@ -453,6 +450,55 @@ COMMENT ON FUNCTION refresh_materialized_views () IS 'Refreshes all materialized
 -- Schedule for Materialized View Refresh (using pg_cron if available)
 -- ============================================================================
 
+-- ============================================================================
+-- Performance Alert Status View
+-- ============================================================================
+
+CREATE OR REPLACE VIEW performance_alert_status AS
+SELECT
+    pa.id as alert_id,
+    pa.name as alert_name,
+    pa.description,
+    pa.server_id,
+    ms.name as server_name,
+    pa.metric_name,
+    pa.threshold_value,
+    pa.comparison_operator,
+    pa.duration_minutes,
+    pa.is_active,
+    pa.is_triggered,
+    pa.last_triggered,
+    pa.trigger_count_24h,
+    CASE
+        WHEN pa.severity = 'CRITICAL'
+        AND pa.is_triggered THEN 'Active - Critical'
+        WHEN pa.severity = 'WARNING'
+        AND pa.is_triggered THEN 'Active - Warning'
+        WHEN pa.severity = 'INFO'
+        AND pa.is_triggered THEN 'Active - Info'
+        WHEN pa.is_active
+        AND NOT pa.is_triggered THEN 'Monitoring'
+        ELSE 'Inactive'
+    END as alert_status,
+    pa.severity,
+    CASE
+        WHEN pa.last_triggered IS NOT NULL THEN EXTRACT(
+            EPOCH
+            FROM (NOW() - pa.last_triggered)
+        ) / 60
+        ELSE NULL
+    END as minutes_since_last_trigger,
+    pa.created_at,
+    pa.updated_at
+FROM
+    performance_alerts pa
+    LEFT JOIN mcp_server ms ON pa.server_id = ms.id
+ORDER BY pa.severity DESC, pa.is_triggered DESC, pa.last_triggered DESC;
+
+COMMENT ON VIEW performance_alert_status IS 'Current status of all performance alerts with server details';
+
+-- ============================================================================
+
 -- Uncomment if pg_cron extension is installed
 -- SELECT cron.schedule('refresh-materialized-views', '0 * * * *', 'SELECT refresh_materialized_views();');
 
@@ -469,5 +515,6 @@ COMMENT ON FUNCTION refresh_materialized_views () IS 'Refreshes all materialized
 -- GRANT SELECT ON v_security_audit TO your_app_role;
 -- GRANT SELECT ON v_rate_limit_status TO your_app_role;
 -- GRANT SELECT ON v_system_health_dashboard TO your_app_role;
+-- GRANT SELECT ON performance_alert_status TO your_app_role;
 -- GRANT SELECT ON mv_daily_usage_summary TO your_app_role;
 -- GRANT SELECT ON mv_server_performance_metrics TO your_app_role;

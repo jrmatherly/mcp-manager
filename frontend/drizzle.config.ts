@@ -18,8 +18,8 @@ export default defineConfig({
   // Migration configuration
   migrations: {
     prefix: "timestamp",
-    table: "drizzle_migrations",
-    schema: "public",
+    table: "__drizzle_migrations",
+    schema: "drizzle",
   },
   // Enable verbose logging for debugging
   verbose: true,

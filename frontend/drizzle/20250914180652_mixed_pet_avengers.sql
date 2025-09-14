@@ -93,7 +93,7 @@ CREATE TABLE "verification" (
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone,
 	"updated_at" timestamp with time zone,
-	"type" text NOT NULL,
+	"type" text,
 	"attempts" integer DEFAULT 0,
 	"max_attempts" integer DEFAULT 3,
 	"is_used" boolean DEFAULT false

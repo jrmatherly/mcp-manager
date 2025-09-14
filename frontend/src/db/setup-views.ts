@@ -424,6 +424,132 @@ const views = [
       "CREATE INDEX IF NOT EXISTS idx_mv_server_perf_time ON mv_server_performance_metrics (hour_bucket DESC)",
     ],
   },
+  {
+    name: "database_size_summary",
+    type: "VIEW",
+    sql: `
+      CREATE OR REPLACE VIEW database_size_summary AS
+      SELECT
+          pg_database_size(current_database()) as total_size_bytes,
+          pg_size_pretty(pg_database_size(current_database())) as total_size_pretty,
+          (SELECT COUNT(*) FROM pg_stat_user_tables) as table_count,
+          (SELECT COUNT(*) FROM pg_stat_user_indexes) as index_count,
+          (SELECT COUNT(*) FROM pg_views WHERE schemaname = 'public') as view_count,
+          (SELECT COUNT(*) FROM pg_proc WHERE pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')) as function_count,
+          (SELECT COUNT(*) FROM pg_stat_activity WHERE datname = current_database()) as active_connections,
+          (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') as max_connections,
+          NOW() as checked_at
+    `,
+  },
+  {
+    name: "index_usage_summary",
+    type: "VIEW",
+    sql: `
+      CREATE OR REPLACE VIEW index_usage_summary AS
+      SELECT
+          schemaname,
+          relname as tablename,
+          indexrelname as indexname,
+          pg_size_pretty(pg_relation_size(indexrelid)) as index_size,
+          idx_scan as index_scans,
+          idx_tup_read as tuples_read,
+          idx_tup_fetch as tuples_fetched,
+          CASE
+              WHEN idx_scan = 0 THEN 'Unused'
+              WHEN idx_scan < 10 THEN 'Rarely Used'
+              WHEN idx_scan < 100 THEN 'Occasionally Used'
+              ELSE 'Frequently Used'
+          END as usage_category,
+          pg_relation_size(indexrelid) as size_bytes
+      FROM pg_stat_user_indexes
+      ORDER BY idx_scan, pg_relation_size(indexrelid) DESC
+    `,
+  },
+  {
+    name: "performance_monitoring",
+    type: "VIEW",
+    sql: `
+      CREATE OR REPLACE VIEW performance_monitoring AS
+      SELECT
+          'database' as component,
+          pg_database_size(current_database()) as metric_value,
+          'Database Size (bytes)' as metric_name,
+          pg_size_pretty(pg_database_size(current_database())) as metric_display,
+          NOW() as timestamp
+      UNION ALL
+      SELECT
+          'connections' as component,
+          COUNT(*)::bigint as metric_value,
+          'Active Connections' as metric_name,
+          COUNT(*)::text || ' connections' as metric_display,
+          NOW() as timestamp
+      FROM pg_stat_activity
+      WHERE state = 'active'
+      UNION ALL
+      SELECT
+          'tables' as component,
+          COUNT(*)::bigint as metric_value,
+          'Total Tables' as metric_name,
+          COUNT(*)::text || ' tables' as metric_display,
+          NOW() as timestamp
+      FROM pg_stat_user_tables
+      UNION ALL
+      SELECT
+          'indexes' as component,
+          COUNT(*)::bigint as metric_value,
+          'Total Indexes' as metric_name,
+          COUNT(*)::text || ' indexes' as metric_display,
+          NOW() as timestamp
+      FROM pg_stat_user_indexes
+    `,
+  },
+  {
+    name: "performance_alert_status",
+    type: "VIEW",
+    sql: `
+      CREATE OR REPLACE VIEW performance_alert_status AS
+      SELECT
+          pa.id as alert_id,
+          pa.name as alert_name,
+          pa.description,
+          pa.server_id,
+          ms.name as server_name,
+          pa.metric_name,
+          pa.threshold_value,
+          pa.comparison_operator,
+          pa.duration_minutes,
+          pa.is_active,
+          pa.is_triggered,
+          pa.last_triggered,
+          pa.trigger_count as trigger_count_total,
+          CASE
+              WHEN pa.is_triggered AND pa.threshold_value >= 1000 THEN 'Active - Critical'
+              WHEN pa.is_triggered AND pa.threshold_value >= 500 THEN 'Active - Warning'
+              WHEN pa.is_triggered THEN 'Active - Info'
+              WHEN pa.is_active AND NOT pa.is_triggered THEN 'Monitoring'
+              ELSE 'Inactive'
+          END as alert_status,
+          CASE
+              WHEN pa.threshold_value >= 1000 THEN 'CRITICAL'
+              WHEN pa.threshold_value >= 500 THEN 'WARNING'
+              ELSE 'INFO'
+          END as severity,
+          CASE
+              WHEN pa.last_triggered IS NOT NULL THEN
+                  EXTRACT(EPOCH FROM (NOW() - pa.last_triggered)) / 60
+              ELSE NULL
+          END as minutes_since_last_trigger,
+          pa.created_at,
+          pa.updated_at
+      FROM
+          performance_alerts pa
+          LEFT JOIN mcp_server ms ON pa.server_id = ms.id
+      ORDER BY
+          pa.is_triggered DESC,
+          pa.threshold_value DESC,
+          pa.last_triggered DESC
+    `,
+  },
 ];
 
 /**

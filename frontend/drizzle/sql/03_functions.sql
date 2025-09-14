@@ -25,12 +25,12 @@ BEGIN
     RETURN QUERY
     SELECT
         COUNT(*) as total_servers,
-        COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy_servers,
-        COUNT(*) FILTER (WHERE health_status = 'unhealthy') as unhealthy_servers,
-        COUNT(*) FILTER (WHERE health_status = 'unknown') as degraded_servers,
-        ROUND(AVG(avg_response_time), 2) as avg_response_time
-    FROM mcp_server
-    WHERE status != 'inactive';
+        COUNT(*) FILTER (WHERE ms.health_status = 'healthy') as healthy_servers,
+        COUNT(*) FILTER (WHERE ms.health_status = 'unhealthy') as unhealthy_servers,
+        COUNT(*) FILTER (WHERE ms.health_status = 'unknown') as degraded_servers,
+        ROUND(AVG(ms.avg_response_time), 2) as avg_response_time
+    FROM mcp_server ms
+    WHERE ms.status != 'inactive';
 END;
 $$;
 
@@ -96,9 +96,11 @@ BEGIN
     WITH request_stats AS (
         SELECT
             status_code,
-            response_time as duration_ms
+            response_time::numeric as duration_ms
         FROM api_usage
-        WHERE timestamp > NOW() - (p_hours || ' hours')::interval
+        WHERE requested_at > NOW() - (p_hours || ' hours')::interval
+        AND status_code IS NOT NULL
+        AND response_time IS NOT NULL
     )
     SELECT
         COUNT(*) as total_requests,
@@ -142,7 +144,7 @@ BEGIN
          JOIN mcp_server ms ON mr.server_id = ms.id
          WHERE ms.tenant_id = p_tenant_id) as total_resources,
         (SELECT SUM(daily_request_count) FROM api_usage_stats WHERE tenant_id = p_tenant_id) as total_api_calls,
-        (SELECT ROUND(AVG(avg_response_time), 2) FROM mcp_server WHERE tenant_id = p_tenant_id) as avg_response_time,
+        (SELECT ROUND(AVG(ms.avg_response_time), 2) FROM mcp_server ms WHERE ms.tenant_id = p_tenant_id) as avg_response_time,
         (SELECT COUNT(*) FROM "user" WHERE tenant_id = p_tenant_id) as total_users,
         (SELECT COUNT(*) FROM session s
          JOIN "user" u ON s.user_id = u.id
@@ -177,14 +179,14 @@ BEGIN
 
     RETURN QUERY
     SELECT
-        date_trunc(p_granularity, au.timestamp) as time_bucket,
+        date_trunc(p_granularity, au.requested_at) as time_bucket,
         COUNT(*) as total_requests,
         COUNT(DISTINCT au.user_id) as unique_users,
         ROUND(AVG(au.response_time)::numeric, 2) as avg_response_time,
         ROUND((COUNT(*) FILTER (WHERE au.status_code >= 400)::numeric / COUNT(*)::numeric) * 100, 2) as error_rate
     FROM api_usage au
-    WHERE au.timestamp > NOW() - (p_days || ' days')::interval
-    GROUP BY date_trunc(p_granularity, au.timestamp)
+    WHERE au.requested_at > NOW() - (p_days || ' days')::interval
+    GROUP BY date_trunc(p_granularity, au.requested_at)
     ORDER BY time_bucket DESC;
 END;
 $$;
@@ -290,7 +292,7 @@ BEGIN
             'error_rate', ROUND((COUNT(*) FILTER (WHERE status_code >= 400)::numeric / COUNT(*)::numeric) * 100, 2)
         ) as details
     FROM api_usage
-    WHERE timestamp > NOW() - INTERVAL '24 hours'
+    WHERE requested_at > NOW() - INTERVAL '24 hours'
 
     UNION ALL
 
@@ -339,7 +341,7 @@ BEGIN
     RETURN QUERY SELECT 'audit_log'::text, v_deleted;
 
     -- Clean old API usage data (keep 30 days of detailed data)
-    DELETE FROM api_usage WHERE timestamp < NOW() - INTERVAL '30 days';
+    DELETE FROM api_usage WHERE requested_at < NOW() - INTERVAL '30 days';
     GET DIAGNOSTICS v_deleted = ROW_COUNT;
     RETURN QUERY SELECT 'api_usage'::text, v_deleted;
 
@@ -353,6 +355,123 @@ $$;
 COMMENT ON FUNCTION cleanup_expired_data () IS 'Removes expired data from various tables for maintenance';
 
 -- ============================================================================
+-- API Usage Statistics Function (Daily aggregation)
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_api_usage_statistics(p_days integer DEFAULT 7)
+RETURNS TABLE(
+    date timestamp,
+    total_calls bigint,
+    unique_tenants bigint,
+    unique_users bigint,
+    avg_response_time numeric,
+    error_count bigint
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        date_trunc('day', au.requested_at) as date,
+        COUNT(*) as total_calls,
+        COUNT(DISTINCT u.tenant_id) as unique_tenants,
+        COUNT(DISTINCT au.user_id) as unique_users,
+        ROUND(AVG(au.response_time)::numeric, 2) as avg_response_time,
+        COUNT(*) FILTER (WHERE au.status_code >= 400) as error_count
+    FROM api_usage au
+    LEFT JOIN "user" u ON au.user_id = u.id
+    WHERE au.requested_at > NOW() - (p_days || ' days')::interval
+    GROUP BY date_trunc('day', au.requested_at)
+    ORDER BY date DESC;
+END;
+$$;
+
+COMMENT ON FUNCTION get_api_usage_statistics (integer) IS 'Returns daily API usage statistics with tenant and user aggregation';
+
+-- ============================================================================
+-- Circuit Breaker Status Function
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_circuit_breaker_status()
+RETURNS TABLE(
+    server_id text,
+    server_name text,
+    service_name varchar(255),
+    state text,
+    failure_count integer,
+    success_count integer,
+    last_state_change timestamp,
+    time_in_current_state interval
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        cb.server_id,
+        ms.name as server_name,
+        cb.service_name,
+        cb.state::text,
+        cb.failure_count,
+        cb.success_count,
+        cb.last_state_change,
+        NOW() - cb.last_state_change as time_in_current_state
+    FROM circuit_breakers cb
+    LEFT JOIN mcp_server ms ON cb.server_id = ms.id
+    -- No is_active field in the schema, so we return all circuit breakers
+    ORDER BY cb.state DESC, cb.last_state_change DESC;
+END;
+$$;
+
+COMMENT ON FUNCTION get_circuit_breaker_status () IS 'Returns current status of all circuit breakers';
+
+-- ============================================================================
+-- Connection Pool Statistics Function
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_connection_pool_stats()
+RETURNS TABLE(
+    server_id text,
+    server_name text,
+    pool_name varchar(255),
+    active_connections integer,
+    idle_connections integer,
+    total_connections integer,
+    utilization_percentage numeric,
+    avg_wait_time_ms numeric,
+    last_used timestamp
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        cp.server_id,
+        ms.name as server_name,
+        cp.pool_name,
+        cp.active_connections,
+        cp.idle_connections,
+        -- Calculate total connections from active + idle
+        (cp.active_connections + cp.idle_connections) as total_connections,
+        CASE
+            WHEN cp.max_size > 0 THEN
+                ROUND(((cp.active_connections + cp.idle_connections)::numeric / cp.max_size::numeric) * 100, 2)
+            ELSE 0
+        END as utilization_percentage,
+        -- Use avg_connection_time_ms instead of avg_wait_time_ms (which doesn't exist)
+        ROUND(COALESCE(cp.avg_connection_time_ms, 0)::numeric, 2) as avg_wait_time_ms,
+        -- Use last_health_check as a proxy for last_used (which doesn't exist)
+        cp.last_health_check as last_used
+    FROM connection_pools cp
+    LEFT JOIN mcp_server ms ON cp.server_id = ms.id
+    WHERE cp.is_healthy = true
+    ORDER BY utilization_percentage DESC, cp.last_health_check DESC;
+END;
+$$;
+
+COMMENT ON FUNCTION get_connection_pool_stats () IS 'Returns connection pool statistics with utilization metrics';
+
+-- ============================================================================
 -- FUNCTION PERMISSIONS
 -- ============================================================================
 
@@ -362,6 +481,9 @@ COMMENT ON FUNCTION cleanup_expired_data () IS 'Removes expired data from variou
 -- GRANT EXECUTE ON FUNCTION get_request_performance_summary(integer) TO your_app_role;
 -- GRANT EXECUTE ON FUNCTION get_tenant_usage_summary(text) TO your_app_role;
 -- GRANT EXECUTE ON FUNCTION get_api_usage_trending(integer, text) TO your_app_role;
+-- GRANT EXECUTE ON FUNCTION get_api_usage_statistics(integer) TO your_app_role;
 -- GRANT EXECUTE ON FUNCTION get_tool_usage_analytics(text) TO your_app_role;
+-- GRANT EXECUTE ON FUNCTION get_circuit_breaker_status() TO your_app_role;
+-- GRANT EXECUTE ON FUNCTION get_connection_pool_stats() TO your_app_role;
 -- GRANT EXECUTE ON FUNCTION check_system_health() TO your_app_role;
 -- GRANT EXECUTE ON FUNCTION cleanup_expired_data() TO your_app_role;

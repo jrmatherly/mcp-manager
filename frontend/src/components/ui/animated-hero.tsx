@@ -27,9 +27,9 @@ function Hero() {
         <div className="flex gap-8 py-20 lg:py-40 items-center justify-center flex-col">
           <div>
             <Button variant="secondary" size="sm" className="gap-4" asChild>
-              <a href="https://www.zexa.app" target="_blank" rel="noopener noreferrer">
-                <Image src="/logo.png" alt="Zexa" width={16} height={16} className="w-4 h-4" />
-                Built by Zexa <MoveRight className="w-4 h-4" />
+              <a href="https://github.com/jrmatherly/mcp-manager" target="_blank" rel="noopener noreferrer">
+                <Image src="/logo.png" alt="MCP Manager" width={16} height={16} className="w-4 h-4" />
+                Built by MatherlyNet <MoveRight className="w-4 h-4" />
               </a>
             </Button>
           </div>
@@ -42,7 +42,7 @@ function Hero() {
                   <motion.span
                     key={index}
                     className="absolute font-semibold"
-                    initial={{ opacity: 0, y: "-100" }}
+                    initial={{ opacity: 0, y: -100 }}
                     transition={{ type: "spring", stiffness: 50 }}
                     animate={
                       titleNumber === index
@@ -72,7 +72,7 @@ function Hero() {
               <a href="/dashboard">View Demo</a>
             </Button>
             <Button size="lg" className="gap-4" asChild>
-              <a href="https://github.com/zexahq/better-auth-starter" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/jrmatherly/mcp-manager" target="_blank" rel="noopener noreferrer">
                 Check GitHub Repo <MoveRight className="w-4 h-4" />
               </a>
             </Button>

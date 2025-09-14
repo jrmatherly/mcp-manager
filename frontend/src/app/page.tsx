@@ -102,8 +102,8 @@ const HomePage = () => {
         <div className="text-center mt-12 pt-8 border-t border-border/50">
           <p className="text-muted-foreground">
             Built with ❤️ by{" "}
-            <Link href="https://zexa.app" target="_blank" className="text-primary hover:underline font-medium">
-              Zexa
+            <Link href="https://github.com/jrmatherly/mcp-manager" target="_blank" className="text-primary hover:underline font-medium">
+              MatherlyNet
             </Link>
           </p>
         </div>

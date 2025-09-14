@@ -6,10 +6,12 @@ import { Inter } from "next/font/google";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
-  title: "Zexa Better Auth",
+  title: "MCP Manager",
   description: "A Next.js boilerplate for building web applications",
 };
 
