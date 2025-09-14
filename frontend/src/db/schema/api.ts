@@ -18,7 +18,7 @@ export const apiToken = pgTable(
     // Token identification (MCP Registry specific)
     name: text("name").notNull(),
     description: text("description"),
-    tokenHash: text("token_hash").notNull().unique(),
+    tokenHash: text("token_hash").notNull(),
     tokenPrefix: text("token_prefix").notNull(),
 
     // Token ownership
@@ -66,7 +66,7 @@ export const apiToken = pgTable(
       .notNull(),
   },
   (table) => ({
-    tokenHashIdx: unique("api_token_hash_unique").on(table.tokenHash),
+    tokenHashIdx: unique("api_token_token_hash_unique").on(table.tokenHash),
     userIdx: index("api_token_user_idx").on(table.userId),
     tenantIdx: index("api_token_tenant_idx").on(table.tenantId),
     activeIdx: index("api_token_active_idx").on(table.isActive),

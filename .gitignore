@@ -12,6 +12,7 @@ app.egg-info
 .coverage
 htmlcov
 .cache/
+.kratos/
 
 # Node.js
 node_modules/
@@ -33,3 +34,5 @@ Thumbs.db
 
 docs/ARCHIVED
 docs/example_frontend_project
+DELETE_PENDING/
+DELETE_PENDING/example_frontend_project/

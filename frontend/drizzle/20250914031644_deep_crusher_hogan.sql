@@ -377,6 +377,30 @@ CREATE TABLE "rate_limit_violation" (
 	"violated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "apiKey" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text,
+	"start" text,
+	"prefix" text,
+	"key" text NOT NULL,
+	"userId" text NOT NULL,
+	"refillInterval" integer,
+	"refillAmount" integer,
+	"lastRefillAt" timestamp with time zone,
+	"enabled" boolean DEFAULT true NOT NULL,
+	"rateLimitEnabled" boolean DEFAULT true NOT NULL,
+	"rateLimitTimeWindow" integer,
+	"rateLimitMax" integer,
+	"requestCount" integer DEFAULT 0 NOT NULL,
+	"remaining" integer,
+	"lastRequest" timestamp with time zone,
+	"expiresAt" timestamp with time zone,
+	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"permissions" text,
+	"metadata" text
+);
+--> statement-breakpoint
 CREATE TABLE "audit_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"event_type" text NOT NULL,

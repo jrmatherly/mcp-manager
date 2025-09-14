@@ -4,29 +4,25 @@ Enterprise-grade MCP (Model Context Protocol) Registry, Gateway, and Proxy Syste
 
 ## Quick Start
 
-### Development Setup
+For detailed setup instructions, see **[QUICKSTART.md](./QUICKSTART.md)**.
 
-1. **Backend Development:**
+### Development Setup (TL;DR)
+
+1. **Prerequisites:** Node.js ≥22, PostgreSQL ≥17, Redis ≥8
+
+2. **Backend Development:**
    ```bash
    cd backend
    uv sync
    uv run mcp-gateway serve --reload --port 8000
    ```
 
-2. **Frontend Development:**
+3. **Frontend Development:**
    ```bash
    cd frontend
    npm install
-   npm run db:migrate    # Apply database optimizations
-   npm run dev           # Uses --turbopack for faster development
-   ```
-
-3. **Database Setup:**
-   ```bash
-   # Apply performance optimizations (38 indexes + functions + views)
-   cd frontend
-   npm run db:migrate
-   npm run test tests/db-optimization.test.ts  # Verify optimizations
+   npm run db:setup:full    # Complete database setup with optimizations
+   npm run dev              # Uses --turbopack for faster development
    ```
 
 4. **Docker Development:**
@@ -54,8 +50,9 @@ Enterprise-grade MCP (Model Context Protocol) Registry, Gateway, and Proxy Syste
 ### Development Experience
 - **Type-Safe**: Complete TypeScript support with Drizzle-generated types
 - **Comprehensive Testing**: Database optimization tests, integration tests, unit tests
-- **Modern Configuration**: Next.js 15, React 19, Tailwind CSS v4, Better-Auth
-- **Production-Ready Logging**: Structured logging with context and environment awareness
+- **Modern Stack**: Next.js 15, React 19, Tailwind CSS v4, Better-Auth with Microsoft/Entra ID
+- **Production-Ready Logging**: Structured logging utility replacing all console.log statements
+- **Unified Database Management**: All database operations consolidated in frontend with TypeScript
 - **Migration Management**: Automated database migrations with rollback support
 
 ## Database Schema
@@ -74,6 +71,7 @@ The application uses a comprehensive, production-optimized database schema inclu
 - **38 Strategic Indexes**: 33 essential + 5 composite indexes for 40-90% query performance improvement
 - **3 Database Functions**: Real-time analytics (`get_server_health_summary`, `get_request_performance_summary`, `get_tenant_usage_summary`)
 - **3 Monitoring Views**: Operational visibility (`database_size_summary`, `index_usage_summary`, `performance_monitoring`)
+- **Consolidated SQL Management**: All SQL files moved from `frontend/src/db/sql/` to `frontend/drizzle/sql/`
 - **Full Text Search**: Advanced search capabilities across servers, tools, and resources
 - **Time-Series Optimization**: Specialized indexes for metrics and request logs
 

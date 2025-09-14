@@ -1,6 +1,6 @@
 {
-  "id": "3071a0b1-00dd-4533-b642-311ab16e04c7",
-  "prevId": "a552225f-7fbf-4ae7-8370-2b45538b655c",
+  "id": "cbe303ab-da68-4333-8704-297871cc9f76",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3050,15 +3050,16 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -3076,7 +3077,7 @@
           "name": "token_prefix",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
@@ -3096,12 +3097,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'[]'::json"
-        },
-        "permissions": {
-          "name": "permissions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "type": {
           "name": "type",
@@ -3135,73 +3130,6 @@
           "notNull": true,
           "default": true
         },
-        "start": {
-          "name": "start",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rate_limit_enabled": {
-          "name": "rate_limit_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        },
-        "rate_limit_time_window": {
-          "name": "rate_limit_time_window",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 3600000
-        },
-        "rate_limit_max": {
-          "name": "rate_limit_max",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 1000
-        },
-        "request_count": {
-          "name": "request_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "remaining": {
-          "name": "remaining",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 1000
-        },
-        "last_refill_at": {
-          "name": "last_refill_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "refill_interval": {
-          "name": "refill_interval",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 3600000
-        },
-        "refill_amount": {
-          "name": "refill_amount",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 1000
-        },
-        "last_request": {
-          "name": "last_request",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "last_used_at": {
           "name": "last_used_at",
           "type": "timestamp with time zone",
@@ -3214,12 +3142,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": 0
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "expires_at": {
           "name": "expires_at",
@@ -3286,21 +3208,6 @@
           "method": "btree",
           "with": {}
         },
-        "api_token_enabled_idx": {
-          "name": "api_token_enabled_idx",
-          "columns": [
-            {
-              "expression": "is_active",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "api_token_expires_idx": {
           "name": "api_token_expires_idx",
           "columns": [
@@ -3321,36 +3228,6 @@
           "columns": [
             {
               "expression": "last_used_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "api_token_last_request_idx": {
-          "name": "api_token_last_request_idx",
-          "columns": [
-            {
-              "expression": "last_request",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "api_token_rate_limit_idx": {
-          "name": "api_token_rate_limit_idx",
-          "columns": [
-            {
-              "expression": "rate_limit_enabled",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4196,6 +4073,150 @@
           "with": {}
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.apiKey": {
+      "name": "apiKey",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start": {
+          "name": "start",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prefix": {
+          "name": "prefix",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refillInterval": {
+          "name": "refillInterval",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refillAmount": {
+          "name": "refillAmount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastRefillAt": {
+          "name": "lastRefillAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "rateLimitEnabled": {
+          "name": "rateLimitEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "rateLimitTimeWindow": {
+          "name": "rateLimitTimeWindow",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rateLimitMax": {
+          "name": "rateLimitMax",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requestCount": {
+          "name": "requestCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "remaining": {
+          "name": "remaining",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastRequest": {
+          "name": "lastRequest",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

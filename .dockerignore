@@ -70,6 +70,11 @@ test_reports/
 .Trashes
 ehthumbs.db
 Thumbs.db
+.kratos/
+.serena/
+.claude/
+reports/
+docs/
 
 # Logs
 *.log

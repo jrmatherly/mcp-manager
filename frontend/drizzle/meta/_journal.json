@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757744164773,
-      "tag": "20250913061604_plain_exiles",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1757744220000,
-      "tag": "20250913061700_add_database_functions",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757744280000,
-      "tag": "20250913061800_add_monitoring_views",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1757802740176,
-      "tag": "20250913223220_thankful_shinobi_shaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1757808314608,
-      "tag": "20250914000514_small_slapstick",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1757810438834,
-      "tag": "20250914004038_neat_rick_jones",
+      "when": 1757819804161,
+      "tag": "20250914031644_deep_crusher_hogan",
       "breakpoints": true
     }
   ]

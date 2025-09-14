@@ -6,7 +6,7 @@
  */
 
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, json, uuid, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, json, uuid, integer, index, unique } from "drizzle-orm/pg-core";
 
 // Core Better-Auth compatible user table
 export const user = pgTable(
@@ -149,8 +149,8 @@ export const verification = pgTable(
 
     // Extended verification fields
     type: text("type", { enum: ["email", "phone", "password_reset", "two_factor"] }).notNull(),
-    attempts: text("attempts").default("0"),
-    maxAttempts: text("max_attempts").default("3"),
+    attempts: integer("attempts").default(0),
+    maxAttempts: integer("max_attempts").default(3),
     isUsed: boolean("is_used").default(false),
   },
   (table) => ({

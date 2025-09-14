@@ -15,7 +15,7 @@ Enterprise-grade MCP (Model Context Protocol) Registry, Gateway, and Proxy Syste
 
 ```bash
 cd backend
-uv sync                                # Install dependencies
+uv sync                               # Install dependencies
 uv run mcp-gateway serve --reload --port 8000  # Dev server
 uv run pytest                         # Run tests
 uv run ruff check . && uv run mypy .  # Quality checks
@@ -23,10 +23,12 @@ uv run alembic upgrade head           # Apply migrations
 ```
 
 ### Frontend (Next.js/React)
+**CRITICAL**: All database management is now in the frontend (TypeScript).
+
 ```bash
 cd frontend
 npm install                           # Install dependencies
-npm run db:migrate                   # Apply database optimizations (38 indexes + functions + views)
+npm run db:setup:full                # Complete automated DB setup (create, migrate, optimize, apply all SQL)
 npm run dev                          # Dev server (--turbopack)
 npm run build                        # Production build
 npm run lint                         # ESLint checks
@@ -34,6 +36,7 @@ npm run test                         # Run Vitest tests (including database opti
 npm run db:generate                  # Generate Drizzle types
 npm run db:studio                    # Open Drizzle Studio
 npm run db:seed                      # Seed database with test data
+npm run db:health                    # Database health check
 ```
 
 ### Docker
@@ -79,9 +82,17 @@ docker-compose down -v               # Stop and remove volumes
 - **`docs/agents/`**: Detailed documentation (see below)
 
 ### Environment Files
-- `backend/.env` - Backend config (takes precedence)
-- `frontend/.env.local` - Frontend Next.js config  
+- `backend/.env` - Backend config (Python/FastAPI)
+- `frontend/.env.local` - Frontend Next.js config with database credentials
 - Root `.env` - Docker Compose variables
+
+### Database Management (Important Changes)
+- **Fully Automated Setup**: `npm run db:setup:full` now handles everything automatically
+- **Unified in Frontend**: All database operations moved from Python to TypeScript
+- **SQL Consolidation**: All SQL files consolidated in `frontend/drizzle/sql/`
+- **Auto-Applied Optimizations**: Extensions, 38 indexes, functions, and views applied automatically
+- **Setup Script**: Database setup via `frontend/src/db/setup.ts` (replaces Python scripts)
+- **Archived Scripts**: Python database scripts moved to `backend/scripts/archive/`
 
 ## Detailed Documentation
 
@@ -96,9 +107,9 @@ For comprehensive guides, see:
 
 ## Dependencies
 
-**Backend**: Python ≥3.10, FastAPI ≥0.114.2, FastMCP ≥0.4.0, PostgreSQL ≥13, Redis ≥6
-**Frontend**: Node.js ≥18, Next.js 15.5.3, React 19.1.1, TypeScript 5.9.2
-**Database**: PostgreSQL ≥13 with 38 performance indexes, 3 analytics functions, 3 monitoring views
+**Backend**: Python ≥3.10, FastAPI ≥0.114.2, FastMCP ≥0.4.0, PostgreSQL ≥17, Redis ≥8
+**Frontend**: Node.js ≥22, Next.js 15.5.3, React 19.1.1, TypeScript 5.9.2
+**Database**: PostgreSQL ≥17 with 38 performance indexes, 3 analytics functions, 3 monitoring views
 **Testing**: Vitest with BigInt support, PostgreSQL integration, comprehensive database test suite
 
 ## ⚠️ Critical Rules
@@ -110,11 +121,12 @@ For comprehensive guides, see:
 
 ### Security & Best Practices
 - Never commit `.env` files (use `.env.example` templates)
-- Better-Auth for comprehensive authentication and session management
+- Better-Auth with Microsoft/Entra ID integration for authentication and session management
 - Pydantic validation for backend, Zod validation for frontend
 - Rate limiting: Admin (1000 RPM), Server Owner (500 RPM), User (100 RPM), Anonymous (20 RPM)
-- Centralized logging with environment-aware configuration
-- Type-safe database operations with Drizzle ORM
+- Centralized logging utility (replaced all console.log statements)
+- Type-safe database operations with Drizzle ORM (unified in frontend)
+- Environment-aware configuration and structured logging
 
 ### Database Performance & Optimization
 - **38 Strategic Indexes**: Essential + composite indexes for 40-90% query performance improvement

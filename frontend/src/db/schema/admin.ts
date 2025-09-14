@@ -21,7 +21,7 @@ export const systemConfig = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Configuration identification
-    key: text("key").notNull().unique(),
+    key: text("key").notNull(),
     category: text("category").notNull(), // e.g., "security", "features", "limits"
 
     // Configuration value and metadata
@@ -59,7 +59,7 @@ export const systemConfig = pgTable(
       .notNull(),
   },
   (table) => ({
-    keyUniqueIdx: unique("system_config_key_unique_idx").on(table.key),
+    keyUniqueIdx: unique("system_config_key_unique").on(table.key),
     categoryIdx: index("system_config_category_idx").on(table.category),
     publicIdx: index("system_config_public_idx").on(table.isPublic),
     activeIdx: index("system_config_active_idx").on(table.isActive),
@@ -74,8 +74,8 @@ export const featureFlag = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Flag identification
-    name: text("name").notNull().unique(),
-    key: text("key").notNull().unique(), // Programmatic key (snake_case)
+    name: text("name").notNull(),
+    key: text("key").notNull(), // Programmatic key (snake_case)
     description: text("description"),
 
     // Flag configuration
@@ -124,8 +124,8 @@ export const featureFlag = pgTable(
       .notNull(),
   },
   (table) => ({
-    nameUniqueIdx: unique("feature_flag_name_unique_idx").on(table.name),
-    keyUniqueIdx: unique("feature_flag_key_unique_idx").on(table.key),
+    nameUniqueIdx: unique("feature_flag_name_unique").on(table.name),
+    keyUniqueIdx: unique("feature_flag_key_unique").on(table.key),
     statusIdx: index("feature_flag_status_idx").on(table.status),
     enabledIdx: index("feature_flag_enabled_idx").on(table.isEnabled),
     expiresIdx: index("feature_flag_expires_idx").on(table.expiresAt),

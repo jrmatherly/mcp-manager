@@ -13,7 +13,7 @@ export const tenant = pgTable(
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
-    slug: text("slug").notNull().unique(), // URL-friendly identifier
+    slug: text("slug").notNull(), // URL-friendly identifier
     domain: text("domain"), // Custom domain support
 
     // Tenant status and lifecycle
@@ -108,7 +108,7 @@ export const tenant = pgTable(
     }).default("community"),
   },
   (table) => ({
-    slugUniqueIdx: unique("tenant_slug_unique_idx").on(table.slug),
+    slugUniqueIdx: unique("tenant_slug_unique").on(table.slug),
     domainIdx: index("tenant_domain_idx").on(table.domain),
     statusIdx: index("tenant_status_idx").on(table.status),
     ownerIdx: index("tenant_owner_idx").on(table.ownerId),
@@ -225,7 +225,7 @@ export const tenantInvitation = pgTable(
     message: text("message"),
   },
   (table) => ({
-    tokenUniqueIdx: unique("tenant_invitation_token_unique_idx").on(table.token),
+    tokenUniqueIdx: unique("tenant_invitation_token_unique").on(table.token),
     tenantEmailUniqueIdx: unique("tenant_invitation_tenant_email_unique_idx").on(table.tenantId, table.email),
     tenantIdx: index("tenant_invitation_tenant_idx").on(table.tenantId),
     statusIdx: index("tenant_invitation_status_idx").on(table.status),
