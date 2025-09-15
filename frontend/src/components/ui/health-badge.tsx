@@ -51,7 +51,7 @@ export function HealthBadge({ status, lastChecked, responseTime, errorMessage, s
       default:
         return {
           variant: "secondary" as const,
-          className: "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100",
+          className: "bg-muted text-muted-foreground border-border hover:bg-muted/80",
           icon: HelpCircle,
           label: "Unknown",
           description: "Health status not determined",
@@ -178,7 +178,7 @@ export function InlineHealthStatus({
         return "bg-red-500";
       case "unknown":
       default:
-        return "bg-gray-400";
+        return "bg-muted";
     }
   };
 

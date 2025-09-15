@@ -147,19 +147,19 @@ export function ServerList({ onCreateServer, onEditServer }: ServerListProps) {
           <div className="text-sm text-muted-foreground">Total Servers</div>
         </div>
         <div className="text-center p-4 border rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{filterCounts.active}</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filterCounts.active}</div>
           <div className="text-sm text-muted-foreground">Active</div>
         </div>
         <div className="text-center p-4 border rounded-lg">
-          <div className="text-2xl font-bold text-gray-600">{filterCounts.inactive}</div>
+          <div className="text-2xl font-bold text-muted-foreground">{filterCounts.inactive}</div>
           <div className="text-sm text-muted-foreground">Inactive</div>
         </div>
         <div className="text-center p-4 border rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{filterCounts.healthy}</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filterCounts.healthy}</div>
           <div className="text-sm text-muted-foreground">Healthy</div>
         </div>
         <div className="text-center p-4 border rounded-lg">
-          <div className="text-2xl font-bold text-red-600">{filterCounts.unhealthy}</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filterCounts.unhealthy}</div>
           <div className="text-sm text-muted-foreground">Unhealthy</div>
         </div>
       </div>

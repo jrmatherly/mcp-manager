@@ -13,6 +13,7 @@ app.egg-info
 htmlcov
 .cache/
 .kratos/
+.playwright-mcp/
 
 # Node.js
 node_modules/
@@ -40,3 +41,4 @@ azure_manifest.json
 login-logs.txt
 docs/example_better-auth_project/
 docs/scalar_docs/
+docs/agentOS/

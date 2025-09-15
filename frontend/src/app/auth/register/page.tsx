@@ -10,9 +10,9 @@ import { GalleryVerticalEnd } from "lucide-react";
 
 const RegisterPage = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100">
+    <div className="flex min-h-screen items-center justify-center bg-neutral-100 dark:bg-neutral-900">
       <div className="flex flex-col items-center w-full max-w-md gap-6">
-        <a href="#" className="flex items-center gap-2 self-center font-medium">
+        <a href="#" className="flex items-center gap-2 self-center font-medium text-gray-900 dark:text-gray-100">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <GalleryVerticalEnd className="size-4" />
           </div>

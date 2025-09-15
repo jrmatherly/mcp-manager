@@ -82,23 +82,23 @@ const DashboardPage = () => {
 
           <ResponseTimeCard avgResponseTime={stats?.avgResponseTime ?? null} loading={isLoading} />
 
-          <Card className="transition-all hover:shadow-md">
+          <Card className="transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Unknown Status</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">Unknown Status</CardTitle>
+              <TrendingUp className="h-4 w-4 text-slate-500 dark:text-slate-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? <div className="h-8 bg-gray-300 animate-pulse rounded" /> : stats?.unknownServers ?? 0}
+              <div className="text-2xl font-bold text-foreground">
+                {isLoading ? <div className="h-8 bg-muted animate-pulse rounded" /> : stats?.unknownServers ?? 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Servers with unknown health status</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Servers with unknown health status</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Recent Activity */}
         {stats?.recentActivity && stats.recentActivity.length > 0 && (
-          <Card className="mb-8">
+          <Card className="mb-8 transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
@@ -117,7 +117,7 @@ const DashboardPage = () => {
                             ? "bg-green-500"
                             : activity.healthStatus === "unhealthy"
                             ? "bg-red-500"
-                            : "bg-gray-400"
+                            : "bg-muted"
                         }`}
                       />
                       <div>
@@ -142,13 +142,13 @@ const DashboardPage = () => {
 
         {/* Error State */}
         {isError && (
-          <Card className="mb-8 border-red-200 bg-red-50/50">
+          <Card className="mb-8 border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="h-4 w-4 bg-red-500 rounded-full" />
                 <div>
-                  <p className="font-medium text-red-700">Failed to load dashboard data</p>
-                  <p className="text-sm text-red-600">{error || "An unexpected error occurred"}</p>
+                  <p className="font-medium text-red-700 dark:text-red-300">Failed to load dashboard data</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{error || "An unexpected error occurred"}</p>
                 </div>
                 <Button onClick={refetch} variant="outline" size="sm" className="ml-auto">
                   Retry
@@ -164,7 +164,7 @@ const DashboardPage = () => {
         {/* TODO: Add Server Form Modal/Dialog when form component is created */}
         {showServerForm && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="bg-background rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-semibold mb-4">{selectedServer ? "Edit Server" : "Add New Server"}</h3>
               <p className="text-muted-foreground mb-4">Server form will be implemented in the next phase.</p>
               <div className="flex gap-2 justify-end">

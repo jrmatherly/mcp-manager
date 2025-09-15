@@ -54,30 +54,30 @@ export function ServerCard({ server, onStatusChange, onEdit, onDelete, onHealthC
   const getTransportBadgeColor = (transport: string) => {
     switch (transport) {
       case "http":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
       case "websocket":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800";
       case "stdio":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800";
       case "sse":
-        return "bg-orange-50 text-orange-700 border-orange-200";
+        return "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800";
       case "inactive":
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-muted text-muted-foreground border-border";
       case "error":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800";
       case "maintenance":
-        return "bg-yellow-50 text-yellow-700 border-yellow-200";
+        return "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
@@ -117,8 +117,8 @@ export function ServerCard({ server, onStatusChange, onEdit, onDelete, onHealthC
   return (
     <Card
       className={cn(
-        "transition-all duration-200 hover:shadow-md",
-        server.status === "active" ? "border-l-4 border-l-green-500" : "border-l-4 border-l-gray-300",
+        "transition-all duration-200 hover:shadow-card-hover-enhanced hover:-translate-y-0.5",
+        server.status === "active" ? "border-l-4 border-l-green-500" : "border-l-4 border-l-muted-foreground",
       )}
     >
       <CardHeader className="pb-3">
@@ -227,11 +227,11 @@ export function ServerCard({ server, onStatusChange, onEdit, onDelete, onHealthC
 
         {/* Error Information */}
         {server.healthStatus !== "healthy" && server.errorCount > 0 && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-xs text-red-600 font-medium mb-1">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-800">
+            <p className="text-xs text-red-600 font-medium mb-1 dark:text-red-300">
               {server.errorCount} error{server.errorCount !== 1 ? "s" : ""} in recent requests
             </p>
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-red-500 dark:text-red-400">
               Error rate: {server.requestCount > 0 ? ((server.errorCount / server.requestCount) * 100).toFixed(1) : 0}%
             </p>
           </div>
@@ -248,34 +248,34 @@ export function ServerCardSkeleton() {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-2">
-            <div className="h-6 bg-gray-300 animate-pulse rounded w-3/4" />
-            <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+            <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
+            <div className="h-4 bg-muted/70 animate-pulse rounded w-full" />
           </div>
-          <div className="h-8 w-8 bg-gray-300 animate-pulse rounded" />
+          <div className="h-8 w-8 bg-muted animate-pulse rounded" />
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <div className="h-6 bg-gray-300 animate-pulse rounded w-16" />
-            <div className="h-6 bg-gray-300 animate-pulse rounded w-20" />
+            <div className="h-6 bg-muted animate-pulse rounded w-16" />
+            <div className="h-6 bg-muted animate-pulse rounded w-20" />
           </div>
-          <div className="h-6 bg-gray-300 animate-pulse rounded w-24" />
+          <div className="h-6 bg-muted animate-pulse rounded w-24" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="space-y-1">
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-16" />
-              <div className="h-4 bg-gray-300 animate-pulse rounded w-12" />
+              <div className="h-4 bg-muted/70 animate-pulse rounded w-16" />
+              <div className="h-4 bg-muted animate-pulse rounded w-12" />
             </div>
           ))}
         </div>
 
         <div className="space-y-1">
-          <div className="h-3 bg-gray-200 animate-pulse rounded w-12" />
-          <div className="h-8 bg-gray-300 animate-pulse rounded w-full" />
+          <div className="h-3 bg-muted/70 animate-pulse rounded w-12" />
+          <div className="h-8 bg-muted animate-pulse rounded w-full" />
         </div>
       </CardContent>
     </Card>

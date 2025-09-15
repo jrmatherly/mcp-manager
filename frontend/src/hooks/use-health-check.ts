@@ -2,7 +2,6 @@ import useSWR from "swr";
 import { useState } from "react";
 import type { HealthCheckResponse, ErrorResponse } from "@/db/schema/server";
 
-
 // Hook for real-time health monitoring
 export function useHealthMonitoring(serverIds: string[] = []) {
   const batchFetcher = async (url: string): Promise<HealthCheckResponse[]> => {
@@ -181,7 +180,7 @@ export function getHealthStatusColor(status: string): string {
       return "text-red-600 bg-red-50 border-red-200";
     case "unknown":
     default:
-      return "text-gray-600 bg-gray-50 border-gray-200";
+      return "text-muted-foreground bg-muted border-border";
   }
 }
 

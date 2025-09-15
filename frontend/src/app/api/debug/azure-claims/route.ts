@@ -60,7 +60,19 @@ export async function GET(request: NextRequest) {
         updatedAt: microsoftAccount?.updatedAt,
       },
       tokenDebugging: debugInfo,
+      claims: {
+        idToken: {
+          note: "Token claims are not accessible through Better-Auth API for security",
+        },
+        accessToken: {
+          note: "Token claims are not accessible through Better-Auth API for security",
+        },
+      },
       roleMapping: {
+        detectedRoles: {
+          fromIdToken: [],
+          fromAccessToken: [],
+        },
         currentUserRole: userWithRole.role,
         explanation: "Role assignment is handled during OAuth callback",
         instructions: [
