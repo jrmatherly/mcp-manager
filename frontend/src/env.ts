@@ -12,10 +12,7 @@ export const env = createEnv({
    */
   server: {
     // Database Configuration
-    DATABASE_URL: z
-      .string()
-      .url("Invalid PostgreSQL connection URL")
-      .describe("PostgreSQL connection string"),
+    DATABASE_URL: z.string().url("Invalid PostgreSQL connection URL").describe("PostgreSQL connection string"),
 
     DB_SSL: z
       .string()
@@ -34,75 +31,36 @@ export const env = createEnv({
       .min(32, "Better Auth secret must be at least 32 characters")
       .describe("Secret key for Better Auth sessions"),
 
-    BETTER_AUTH_URL: z
-      .string()
-      .url("Invalid Better Auth URL")
-      .default("http://localhost:3000")
-      .describe("Better Auth callback URL"),
+    BETTER_AUTH_URL: z.string().url("Invalid Better Auth URL").default("http://localhost:3000").describe("Better Auth callback URL"),
 
     // OAuth Providers - GitHub
-    GITHUB_CLIENT_ID: z
-      .string()
-      .optional()
-      .describe("GitHub OAuth client ID"),
+    GITHUB_CLIENT_ID: z.string().optional().describe("GitHub OAuth client ID"),
 
-    GITHUB_CLIENT_SECRET: z
-      .string()
-      .optional()
-      .describe("GitHub OAuth client secret"),
+    GITHUB_CLIENT_SECRET: z.string().optional().describe("GitHub OAuth client secret"),
 
     // OAuth Providers - Google
-    GOOGLE_CLIENT_ID: z
-      .string()
-      .optional()
-      .describe("Google OAuth client ID"),
+    GOOGLE_CLIENT_ID: z.string().optional().describe("Google OAuth client ID"),
 
-    GOOGLE_CLIENT_SECRET: z
-      .string()
-      .optional()
-      .describe("Google OAuth client secret"),
+    GOOGLE_CLIENT_SECRET: z.string().optional().describe("Google OAuth client secret"),
 
     // OAuth Providers - Microsoft/Azure
-    AZURE_CLIENT_ID: z
-      .string()
-      .optional()
-      .describe("Azure/Microsoft OAuth client ID"),
+    AZURE_CLIENT_ID: z.string().optional().describe("Azure/Microsoft OAuth client ID"),
 
-    AZURE_CLIENT_SECRET: z
-      .string()
-      .optional()
-      .describe("Azure/Microsoft OAuth client secret"),
+    AZURE_CLIENT_SECRET: z.string().optional().describe("Azure/Microsoft OAuth client secret"),
 
-    AZURE_TENANT_ID: z
-      .string()
-      .default("common")
-      .describe("Azure tenant ID - use 'common' for all accounts"),
+    AZURE_TENANT_ID: z.string().default("common").describe("Azure tenant ID - use 'common' for all accounts"),
 
     // Email Service
-    RESEND_API_KEY: z
-      .string()
-      .optional()
-      .describe("Resend API key for email service"),
+    RESEND_API_KEY: z.string().optional().describe("Resend API key for email service"),
 
     // Redis Configuration (optional)
-    REDIS_URL: z
-      .string()
-      .url("Invalid Redis URL")
-      .optional()
-      .describe("Redis connection URL for caching"),
+    REDIS_URL: z.string().url("Invalid Redis URL").optional().describe("Redis connection URL for caching"),
 
     // Backend API Configuration
-    BACKEND_URL: z
-      .string()
-      .url("Invalid backend URL")
-      .default("http://localhost:8000")
-      .describe("Backend API server URL"),
+    BACKEND_URL: z.string().url("Invalid backend URL").default("http://localhost:8000").describe("Backend API server URL"),
 
     // Server-side Logging
-    LOG_LEVEL: z
-      .enum(["debug", "info", "warn", "error"])
-      .default("info")
-      .describe("Server-side log level"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info").describe("Server-side log level"),
 
     LOG_PRODUCTION: z
       .string()
@@ -119,10 +77,7 @@ export const env = createEnv({
       .describe("Enable structured JSON logging"),
 
     // Node Environment
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development")
-      .describe("Node environment"),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development").describe("Node environment"),
   },
 
   /**
@@ -131,18 +86,18 @@ export const env = createEnv({
    */
   client: {
     // Public App Configuration
-    NEXT_PUBLIC_APP_URL: z
+    NEXT_PUBLIC_APP_URL: z.string().url("Invalid app URL").optional().default("http://localhost:3000").describe("Public app URL"),
+
+    // Backend API Configuration (Client-side)
+    NEXT_PUBLIC_BACKEND_URL: z
       .string()
-      .url("Invalid app URL")
+      .url("Invalid backend URL")
       .optional()
-      .default("http://localhost:3000")
-      .describe("Public app URL"),
+      .default("http://localhost:8000")
+      .describe("Public backend API URL for client-side documentation"),
 
     // Client-side Logging
-    NEXT_PUBLIC_LOG_LEVEL: z
-      .enum(["debug", "info", "warn", "error"])
-      .default("info")
-      .describe("Client-side log level"),
+    NEXT_PUBLIC_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info").describe("Client-side log level"),
 
     NEXT_PUBLIC_LOG_PRODUCTION: z
       .string()
@@ -199,6 +154,7 @@ export const env = createEnv({
 
     // Client variables
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
     NEXT_PUBLIC_LOG_LEVEL: process.env.NEXT_PUBLIC_LOG_LEVEL,
     NEXT_PUBLIC_LOG_PRODUCTION: process.env.NEXT_PUBLIC_LOG_PRODUCTION,
     NEXT_PUBLIC_LOG_BROWSER: process.env.NEXT_PUBLIC_LOG_BROWSER,
