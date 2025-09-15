@@ -172,6 +172,7 @@ For comprehensive guides, see:
 - **[Testing & Quality](./docs/agents/testing-quality.md)** - Testing philosophy, file organization, reports
 - **[Security & Configuration](./docs/agents/security-configuration.md)** - Auth, validation, environment variables, role mapping
 - **[Authentication Troubleshooting](./docs/agents/authentication-troubleshooting.md)** - Common auth issues, debugging, solutions
+- **[TailwindCSS v4 Guide](./docs/agents/tailwind-v4-guide.md)** - Theme-aware styling, dark mode, glassmorphism effects
 - **[Agent Delegation](./docs/agents/agent-delegation.md)** - Specialist agents, parallel execution
 
 ## Dependencies

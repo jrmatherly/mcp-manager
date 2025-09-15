@@ -126,6 +126,212 @@ npm run test -- --grep="logger"              # Run logger-related tests
 # Run Better-Auth logger tests specifically
 npm run test tests/unit/better-auth-logger.test.ts
 npm run test tests/integration/better-auth-logger-integration.test.ts
+
+# Test theme-aware components
+npm run test -- --grep="theme"              # Run theme-related tests
+npm run test -- --grep="dark mode"          # Run dark mode specific tests
+npm run test -- --grep="light theme"        # Run light theme specific tests
+```
+
+### Theme-Aware Testing Patterns
+
+#### Testing Components in Both Themes
+All UI components should be tested in both light and dark modes to ensure proper styling and visibility:
+
+```typescript
+// Theme testing utilities
+import { ThemeProvider } from "@/components/theme-provider";
+import { render, screen } from "../utils/test-utils";
+
+describe("ThemeAwareComponent", () => {
+  const TestWrapper = ({ theme, children }: { theme: string; children: React.ReactNode }) => (
+    <ThemeProvider attribute="class" defaultTheme={theme}>
+      {children}
+    </ThemeProvider>
+  );
+
+  it("applies correct styling in light theme", () => {
+    render(
+      <TestWrapper theme="light">
+        <StatsCard title="Test" value="100" />
+      </TestWrapper>
+    );
+
+    const card = screen.getByTestId("stats-card");
+    expect(card).toHaveClass("bg-card", "text-card-foreground");
+    expect(card.closest("html")).not.toHaveClass("dark");
+  });
+
+  it("applies correct styling in dark theme", () => {
+    render(
+      <TestWrapper theme="dark">
+        <StatsCard title="Test" value="100" />
+      </TestWrapper>
+    );
+
+    const card = screen.getByTestId("stats-card");
+    expect(card.closest("html")).toHaveClass("dark");
+    // Verify dark mode styling is applied
+  });
+
+  it("handles theme transitions correctly", async () => {
+    const { rerender } = render(
+      <TestWrapper theme="light">
+        <StatsCard title="Test" value="100" />
+      </TestWrapper>
+    );
+
+    rerender(
+      <TestWrapper theme="dark">
+        <StatsCard title="Test" value="100" />
+      </TestWrapper>
+    );
+
+    // Verify component handles theme change gracefully
+    expect(screen.getByTestId("stats-card")).toBeInTheDocument();
+  });
+});
+```
+
+#### Testing Shadow Visibility
+Test that custom shadow utilities are properly applied and visible in dark mode:
+
+```typescript
+describe("Shadow Utilities", () => {
+  it("applies enhanced shadows for dark mode visibility", () => {
+    render(
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <Card className="shadow-card-hover-enhanced">
+          Test Content
+        </Card>
+      </ThemeProvider>
+    );
+
+    const card = screen.getByTestId("card");
+    expect(card).toHaveClass("shadow-card-hover-enhanced");
+    // Verify shadow is visible in dark mode
+    expect(getComputedStyle(card).boxShadow).toContain("rgba");
+  });
+});
+```
+
+#### Testing Glassmorphism Effects
+Ensure glassmorphism components render correctly across themes:
+
+```typescript
+describe("Glassmorphism Components", () => {
+  it("applies glass effects correctly", () => {
+    render(
+      <div className="glass-surface">
+        <span>Glass Content</span>
+      </div>
+    );
+
+    const glassElement = screen.getByText("Glass Content").parentElement;
+    const styles = getComputedStyle(glassElement!);
+    expect(styles.backdropFilter).toContain("blur");
+  });
+
+  it("provides fallback for unsupported browsers", () => {
+    // Mock backdrop-filter support
+    Object.defineProperty(CSS, 'supports', {
+      value: () => false, // Simulate unsupported backdrop-filter
+    });
+
+    render(
+      <div className="glass-surface">
+        Fallback Content
+      </div>
+    );
+
+    // Should apply fallback styling
+    const element = screen.getByText("Fallback Content").parentElement;
+    expect(element).toHaveClass("glass-surface");
+  });
+});
+```
+
+#### Testing Theme Provider Integration
+```typescript
+describe("Theme Provider", () => {
+  it("provides theme context to child components", () => {
+    const TestComponent = () => {
+      const { theme } = useTheme();
+      return <div data-testid="theme-display">{theme}</div>;
+    };
+
+    render(
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <TestComponent />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByTestId("theme-display")).toHaveTextContent("dark");
+  });
+
+  it("handles system theme detection", () => {
+    // Mock system preference
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(query => ({
+        matches: query.includes('dark'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      })),
+    });
+
+    render(
+      <ThemeProvider attribute="class" defaultTheme="system">
+        <div data-testid="system-theme">System Theme</div>
+      </ThemeProvider>
+    );
+
+    expect(document.documentElement).toHaveClass("dark");
+  });
+});
+```
+
+### Visual Regression Testing
+
+#### Component Screenshot Testing
+For critical UI components, consider visual regression testing:
+
+```typescript
+describe("Visual Regression", () => {
+  it("matches screenshot in light theme", async () => {
+    const { container } = render(
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <Dashboard />
+      </ThemeProvider>
+    );
+
+    // Use visual testing library (e.g., @storybook/test-runner)
+    await expect(container).toMatchSnapshot("dashboard-light.png");
+  });
+
+  it("matches screenshot in dark theme", async () => {
+    const { container } = render(
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <Dashboard />
+      </ThemeProvider>
+    );
+
+    await expect(container).toMatchSnapshot("dashboard-dark.png");
+  });
+});
+```
+
+### Theme Testing Best Practices
+
+1. **Test Both Themes**: Always test components in both light and dark modes
+2. **Verify Shadow Visibility**: Ensure custom shadow utilities work in dark mode
+3. **Check Semantic Colors**: Confirm semantic tokens apply correctly across themes
+4. **Test Interactive States**: Verify hover, focus, and active states in both themes
+5. **Validate Glassmorphism**: Ensure glass effects render with proper fallbacks
+6. **Theme Transitions**: Test smooth transitions between theme changes
+7. **Accessibility Compliance**: Verify WCAG contrast requirements in both themes
 ```
 
 ## Backend Testing (Python/Pytest)
@@ -233,29 +439,58 @@ tests/
 ### Testing Conventions
 ```typescript
 // Component test example
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "../utils/test-utils";
+import { ThemeProvider } from "@/components/theme-provider";
 import { describe, it, expect, vi } from "vitest";
 import UserCard from "./UserCard";
 
 describe("UserCard", () => {
   it("displays user information correctly", () => {
     const user = { id: "1", name: "John Doe", email: "john@example.com" };
-    
+
     render(<UserCard user={user} />);
-    
+
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("john@example.com")).toBeInTheDocument();
   });
-  
+
   it("calls onUpdate when edit button is clicked", () => {
     const onUpdate = vi.fn();
     const user = { id: "1", name: "John Doe", email: "john@example.com" };
-    
+
     render(<UserCard user={user} onUpdate={onUpdate} />);
-    
+
     fireEvent.click(screen.getByRole("button", { name: /edit/i }));
-    
+
     expect(onUpdate).toHaveBeenCalledWith(user);
+  });
+
+  // Theme-aware testing
+  it("renders correctly in light theme", () => {
+    const user = { id: "1", name: "John Doe", email: "john@example.com" };
+
+    render(
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <UserCard user={user} />
+      </ThemeProvider>
+    );
+
+    // Test light theme specific styling
+    expect(screen.getByTestId("user-card")).toHaveClass("bg-card");
+  });
+
+  it("renders correctly in dark theme", () => {
+    const user = { id: "1", name: "John Doe", email: "john@example.com" };
+
+    render(
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <UserCard user={user} />
+      </ThemeProvider>
+    );
+
+    // Test dark theme specific styling
+    const card = screen.getByTestId("user-card");
+    expect(card.closest("html")).toHaveClass("dark");
   });
 });
 ```

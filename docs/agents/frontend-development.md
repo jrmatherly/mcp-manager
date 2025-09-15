@@ -86,6 +86,212 @@ import "dotenv/config";
 const dbUrl = process.env.DATABASE_URL!;
 ```
 
+## Theme-Aware Styling
+
+### TailwindCSS v4 Integration
+
+The project uses **TailwindCSS v4** with CSS-first configuration and enhanced performance. For detailed guidance, see **[TailwindCSS v4 Guide](./tailwind-v4-guide.md)**.
+
+#### Configuration Structure
+- **PostCSS Plugin**: `@tailwindcss/postcss` for enhanced performance
+- **CSS-First Config**: Theme configuration in `globals.css` using `@theme` directive
+- **Semantic Color System**: Theme-aware tokens like `bg-card`, `text-foreground`
+- **Custom Shadow Utilities**: Enhanced shadows visible in dark mode
+
+### Key Styling Patterns
+
+#### Semantic Color Usage
+```tsx
+// ❌ Avoid hardcoded colors
+<div className="bg-white text-black border-gray-300">
+
+// ✅ Use semantic tokens
+<div className="bg-card text-card-foreground border-border">
+
+// ✅ Theme-aware variants for status colors
+<Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+  Success
+</Badge>
+```
+
+#### Enhanced Shadow System
+Standard Tailwind shadows (`shadow-md`, `shadow-lg`) are invisible in dark mode. Use custom utilities:
+
+```tsx
+// ❌ Invisible in dark mode
+<Card className="hover:shadow-md">
+
+// ✅ Visible in both themes
+<Card className="hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
+
+// Available shadow variants:
+// - shadow-card-hover: Basic theme-aware shadow
+// - shadow-card-hover-enhanced: Enhanced with glow effect
+// - shadow-card-subtle-enhanced: Subtle variant
+// - shadow-card-strong-enhanced: Strong variant with dual-color glow
+```
+
+#### Glassmorphism Effects
+```tsx
+// Basic glass surface
+<div className="glass-surface p-6">
+  <h3 className="text-foreground">Glass Card</h3>
+</div>
+
+// Interactive glass element
+<button className="glass-interactive px-4 py-2">
+  Click Me
+</button>
+
+// Themed glass containers
+<div className="glass-primary p-4">
+  Primary themed content
+</div>
+```
+
+#### Dark Mode Best Practices
+```tsx
+// Logo background fix
+<div className="bg-background/80 border border-border/40">
+  <Image src="/logo.png" alt="Logo" />
+</div>
+
+// Status indicators with proper variants
+<span className={cn(
+  "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
+  status === "active" && "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800"
+)}>
+  {status}
+</span>
+
+// Interactive cards with enhanced hover
+<Card className="transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
+  <CardContent>
+    Card content with enhanced hover effect
+  </CardContent>
+</Card>
+```
+
+### Theme System Components
+
+#### Theme Provider Setup
+```tsx
+// app/layout.tsx
+import { ThemeProvider } from "@/components/theme-provider";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+#### Theme Toggle Component
+```tsx
+// components/theme-toggle.tsx
+import { useTheme } from "next-themes";
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="glass-interactive p-2 rounded-lg"
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </button>
+  );
+}
+```
+
+### Migration Guidelines
+
+#### From Hardcoded to Semantic Colors
+```tsx
+// Before: Static colors (problematic)
+<div className="bg-gray-100 text-gray-900 border-gray-300">
+
+// After: Semantic colors (recommended)
+<div className="bg-muted text-foreground border-border">
+```
+
+#### Shadow Enhancement
+```tsx
+// Replace all instances of standard shadows:
+// hover:shadow-md → hover:shadow-card-hover-enhanced hover:-translate-y-0.5
+// hover:shadow-lg → hover:shadow-card-hover-enhanced hover:-translate-y-0.5
+// hover:shadow-xl → hover:shadow-card-strong-enhanced hover:-translate-y-1
+```
+
+### Testing Theme Components
+
+#### Test Both Themes
+```typescript
+// Example component test with theme variants
+import { render, screen } from "../utils/test-utils";
+import { ThemeProvider } from "@/components/theme-provider";
+
+describe("UserCard", () => {
+  it("renders correctly in light theme", () => {
+    render(
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <UserCard user={mockUser} />
+      </ThemeProvider>
+    );
+    // Test light theme rendering
+  });
+
+  it("renders correctly in dark theme", () => {
+    render(
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <UserCard user={mockUser} />
+      </ThemeProvider>
+    );
+    // Test dark theme rendering
+  });
+});
+```
+
+### Common Issues and Solutions
+
+#### Issue: Logo has white background in dark mode
+```tsx
+// Solution: Use theme-aware background
+<div className="bg-background/80 border border-border/40 rounded-lg p-2">
+  <Image src="/logo.png" alt="Logo" />
+</div>
+```
+
+#### Issue: Shadows not visible in dark mode
+```tsx
+// Solution: Replace with custom shadow utilities
+className="hover:shadow-card-hover-enhanced hover:-translate-y-0.5"
+```
+
+#### Issue: Inconsistent colors across themes
+```tsx
+// Solution: Use semantic color tokens
+// bg-white → bg-card
+// text-black → text-foreground
+// text-gray-600 → text-muted-foreground
+```
+
+For comprehensive styling guidelines, see:
+- **[TailwindCSS v4 Guide](./tailwind-v4-guide.md)** - Complete v4 migration and usage guide
+- **[Frontend Styling Guide](./frontend-styling.md)** - Glassmorphism design system and theme architecture
+
 ## Code Style
 
 ### Import Conventions
@@ -260,6 +466,14 @@ describe("Better-Auth API Key Integration", () => {
 
 ## Key Features
 
+### Theme-Aware UI System (TailwindCSS v4)
+- **Comprehensive Dark Mode Support**: Seamless theme switching with persistent preferences
+- **Glassmorphism Design System**: Modern glass-like UI with backdrop filters
+- **Enhanced Shadow Utilities**: Custom shadow classes for dark mode visibility
+- **Semantic Color Tokens**: Theme-aware colors using `bg-card`, `text-foreground`, etc.
+- **TailwindCSS v4 Integration**: CSS-first configuration with PostCSS plugin
+- **Performance-Optimized Glass Effects**: Device-aware glassmorphism with mobile optimization
+
 ### Database Integration (TypeScript/Drizzle)
 - **Unified Database Management**: All database operations consolidated in frontend
 - **Type-Safe Operations**: Complete TypeScript support with Drizzle-generated types
@@ -313,10 +527,12 @@ export function createBetterAuthLogger(logger: Logger) {
 ```
 
 ### Testing Infrastructure (Vitest)
+- **Theme Testing**: Component testing in both light and dark modes
 - **Database Testing**: Comprehensive database optimization test suite
 - **BigInt Support**: Configured for PostgreSQL BigInt compatibility
 - **Performance Testing**: Database query performance validation
-- **Component Testing**: React Testing Library integration
+- **Component Testing**: React Testing Library integration with theme provider mocking
+- **Visual Regression Testing**: Ensure glassmorphism effects render consistently
 
 ## Authentication Patterns
 
@@ -484,7 +700,16 @@ curl http://localhost:3000/api/debug/session
 - Next.js: 15.5.3
 - React: 19.1.1
 - TypeScript: 5.9.2
+- TailwindCSS: 4.1.13 (with PostCSS plugin)
+- next-themes: 0.4.6 (theme management)
+- Framer Motion: Latest (theme transitions)
 - Drizzle ORM: 0.44.5+
 - Better-Auth: 1.3.9+
 - T3 Env: Latest (for type-safe environment variables)
 - Zod: Latest (for validation schemas)
+
+**Theme System:**
+- **TailwindCSS v4**: Enhanced performance with PostCSS integration
+- **Glassmorphism Components**: Comprehensive design system with accessibility support
+- **Dark Mode Infrastructure**: Advanced theme detection and management
+- **Custom Utilities**: Enhanced shadow system for dark mode visibility
