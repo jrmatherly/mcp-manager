@@ -39,6 +39,20 @@ npm run db:seed                      # Seed database with test data
 npm run db:health                    # Database health check
 ```
 
+### Authentication System (Better-Auth)
+**CRITICAL**: Client-side authentication pattern for admin routes.
+
+```bash
+# Debug authentication issues
+curl http://localhost:3000/api/debug/session  # Session debugging endpoint
+```
+
+**Key Features**:
+- **Microsoft OAuth with Role Mapping**: Azure AD groups map to Better-Auth roles
+- **Client-Side Route Protection**: Admin routes use client components for auth checking
+- **Role Synchronization**: Automatic role updates during OAuth callbacks
+- **Multi-Provider SSO**: Google, GitHub, Microsoft/Entra ID support
+
 ### Docker
 ```bash
 docker-compose up -d                 # Start all services
@@ -102,6 +116,7 @@ The frontend uses **T3 Env** (`@t3-oss/env-nextjs`) for type-safe environment va
 - Full TypeScript IntelliSense support
 
 **Usage Pattern**:
+
 | Context | Import Pattern | Reason |
 |---------|---------------|--------|
 | **Next.js App Code** | `import { env } from "../env"` | Runs within Next.js runtime |
@@ -117,6 +132,13 @@ The frontend uses **T3 Env** (`@t3-oss/env-nextjs`) for type-safe environment va
 
 These files run as standalone Node.js scripts outside the Next.js runtime and cannot access T3 Env validation.
 
+### Authentication System (Important Changes)
+- **Microsoft OAuth Role Mapping**: Azure AD groups automatically map to Better-Auth roles
+- **Client-Side Admin Routes**: Admin authentication uses client components for better UX
+- **Role Synchronization**: OAuth callbacks automatically sync user roles to database
+- **Environment Variable Handling**: T3 Env for type-safe configuration with client/server separation
+- **Debug Capabilities**: Session debugging endpoint for authentication troubleshooting
+
 ### Database Management (Important Changes)
 - **Fully Automated Setup**: `npm run db:setup:full` now handles everything automatically
 - **Unified in Frontend**: All database operations moved from Python to TypeScript
@@ -130,10 +152,11 @@ These files run as standalone Node.js scripts outside the Next.js runtime and ca
 For comprehensive guides, see:
 
 - **[Backend Development](./docs/agents/backend-development.md)** - Python/FastAPI, testing, conventions
-- **[Frontend Development](./docs/agents/frontend-development.md)** - Next.js/React, testing, types
+- **[Frontend Development](./docs/agents/frontend-development.md)** - Next.js/React, testing, types, authentication patterns
 - **[Docker & Deployment](./docs/agents/docker-deployment.md)** - Container operations, environment setup
 - **[Testing & Quality](./docs/agents/testing-quality.md)** - Testing philosophy, file organization, reports
-- **[Security & Configuration](./docs/agents/security-configuration.md)** - Auth, validation, environment variables
+- **[Security & Configuration](./docs/agents/security-configuration.md)** - Auth, validation, environment variables, role mapping
+- **[Authentication Troubleshooting](./docs/agents/authentication-troubleshooting.md)** - Common auth issues, debugging, solutions
 - **[Agent Delegation](./docs/agents/agent-delegation.md)** - Specialist agents, parallel execution
 
 ## Dependencies
@@ -149,6 +172,13 @@ For comprehensive guides, see:
 - **MANDATORY**: Use specialized agents when available (better-auth-orchestrator, enhanced-database-expert, etc.)
 - **MANDATORY**: Send all independent tool calls in single message for parallel execution
 - **Performance Impact**: Parallel execution is 3-5x faster than sequential calls
+
+### Authentication & Route Protection
+- **Client-Side Auth Pattern**: Admin routes use client components with `useSession()` hooks
+- **Role-Based Access Control**: Azure AD groups map to Better-Auth roles (admin/user/server_owner)
+- **Graceful Redirects**: Non-admin users redirect to dashboard (not 404)
+- **Loading States**: Proper loading indicators during authentication checks
+- **Environment Separation**: T3 Env handles server/client variable validation
 
 ### Security & Best Practices
 - Never commit `.env` files (use `.env.example` templates)

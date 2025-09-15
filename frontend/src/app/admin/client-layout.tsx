@@ -3,10 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { UsersTable } from "@/components/admin/users-table";
+import DashboardLayout from "@/components/admin/dashboard-layout";
 import { logger } from "@/lib/logger";
 
-export default function UsersPage() {
+interface ClientAdminLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function ClientAdminLayout({ children }: ClientAdminLayoutProps) {
   const router = useRouter();
   const { useSession } = authClient;
   const { data: session, isPending } = useSession();
@@ -15,14 +19,14 @@ export default function UsersPage() {
   useEffect(() => {
     if (!isPending) {
       if (!session?.user) {
-        logger.warn("Users page: No session, redirecting to login");
+        logger.warn("Admin layout: No session, redirecting to login");
         router.push("/auth/login");
         return;
       }
 
       const userRole = (session.user as { role?: string })?.role;
       if (userRole !== "admin") {
-        logger.warn("Users page: User does not have admin role", {
+        logger.warn("Admin layout: User does not have admin role", {
           userId: session.user.id,
           actualRole: userRole,
           requiredRole: "admin",
@@ -31,7 +35,7 @@ export default function UsersPage() {
         return;
       }
 
-      logger.info("Users page: Access granted", {
+      logger.info("Admin layout: Access granted", {
         userId: session.user.id,
         role: userRole,
       });
@@ -60,15 +64,5 @@ export default function UsersPage() {
     return null;
   }
 
-  return (
-    <div className="flex flex-col gap-4 p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">Manage users and their roles in the admin dashboard</p>
-        </div>
-      </div>
-      <UsersTable />
-    </div>
-  );
+  return <DashboardLayout>{children}</DashboardLayout>;
 }

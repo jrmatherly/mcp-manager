@@ -272,6 +272,9 @@ describe("Better-Auth API Key Integration", () => {
 - **API Key Support**: Enhanced API keys with rate limiting and metadata
 - **Email Verification**: Resend integration for email verification flows
 - **Integrated Logging**: Better-Auth logger integration with project logging infrastructure
+- **Client-Side Route Protection**: Admin routes use client components for authentication checking
+- **Role Mapping**: Azure AD groups automatically map to Better-Auth roles during OAuth
+- **Environment Variable Integration**: T3 Env provides type-safe configuration handling
 
 #### Better-Auth Logger Integration
 The project includes a custom logger adapter for Better-Auth that integrates with the existing logging infrastructure:
@@ -315,6 +318,165 @@ export function createBetterAuthLogger(logger: Logger) {
 - **Performance Testing**: Database query performance validation
 - **Component Testing**: React Testing Library integration
 
+## Authentication Patterns
+
+### Client-Side Route Protection
+Admin routes use client-side authentication checking for better user experience:
+
+```typescript
+// /admin/client-layout.tsx
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
+
+export default function ClientAdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { useSession } = authClient;
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending) {
+      if (!session?.user) {
+        logger.warn("Admin layout: No session, redirecting to login");
+        router.push("/auth/login");
+        return;
+      }
+
+      const userRole = (session.user as { role?: string })?.role;
+      if (userRole !== "admin") {
+        logger.warn("Admin layout: User does not have admin role", {
+          userId: session.user.id,
+          actualRole: userRole,
+          requiredRole: "admin",
+        });
+        router.push("/dashboard"); // Graceful redirect to dashboard
+        return;
+      }
+    }
+  }, [session, isPending, router]);
+
+  // Show loading state while checking authentication
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated or not admin
+  if (!session?.user || (session.user as { role?: string })?.role !== "admin") {
+    return null;
+  }
+
+  return <DashboardLayout>{children}</DashboardLayout>;
+}
+```
+
+### Role-Based Access Control
+Azure AD groups are mapped to Better-Auth roles during OAuth callbacks:
+
+```typescript
+// /lib/auth/config.ts
+export const APP_ROLE_MAPPINGS = {
+  azure: [
+    // Azure AD Security Groups
+    { azureRole: "SG WLH Admins", betterAuthRole: "admin", description: "WLH Admin Security Group" },
+    { azureRole: "SG MEM SSC Users", betterAuthRole: "user", description: "MEM SSC Users Security Group" },
+
+    // Azure AD app roles
+    { azureRole: "admin", betterAuthRole: "admin", description: "MCP Registry Gateway Administrator" },
+    { azureRole: "Server Owner", betterAuthRole: "server_owner", description: "MCP Server Owner" },
+    { azureRole: "User", betterAuthRole: "user", description: "Standard user role" },
+  ] as AzureRoleMapping[],
+};
+```
+
+### OAuth Role Synchronization
+Roles are automatically synchronized during OAuth callbacks:
+
+```typescript
+// /hooks/use-oauth-role-sync.ts
+export function createOAuthRoleSyncMiddleware() {
+  return createAuthMiddleware(async (ctx) => {
+    const pathIncludesCallback = ctx.path?.includes("/callback/");
+
+    if (pathIncludesCallback && ctx.context?.newSession?.user) {
+      const userWithRole = ctx.context.newSession.user as AuthSession["user"];
+
+      // Extract roles from OAuth tokens and map to Better-Auth roles
+      const extractedRoles = extractRolesFromTokens(tokens);
+      const mappedRole = mapAzureRolesToBetterAuth(extractedRoles, roleMappings);
+
+      // Update user role in database
+      await syncUserRole({ user: { ...userWithRole, role: mappedRole } }, options);
+    }
+  });
+}
+```
+
+### Environment Variable Best Practices
+The project uses T3 Env for type-safe environment variable handling:
+
+```typescript
+// /src/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    // Server-only variables
+    DATABASE_URL: z.string().url(),
+    AZURE_CLIENT_SECRET: z.string().min(1),
+    BETTER_AUTH_SECRET: z.string().min(1),
+  },
+  client: {
+    // Client-side variables (must be prefixed with NEXT_PUBLIC_)
+    NEXT_PUBLIC_API_URL: z.string().url(),
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    AZURE_CLIENT_SECRET: process.env.AZURE_CLIENT_SECRET,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+});
+```
+
+**Usage Guidelines**:
+- **App Code**: Use `import { env } from "@/env"` for type-safe access
+- **CLI Scripts**: Use `import "dotenv/config"` for scripts running outside Next.js
+- **Client Components**: Only access `NEXT_PUBLIC_` prefixed variables
+- **Server Components**: Can access both server and client variables
+
+### Debugging Authentication
+Use the debug endpoint for troubleshooting authentication issues:
+
+```bash
+# Check current session status
+curl http://localhost:3000/api/debug/session
+
+# Expected response for authenticated admin:
+{
+  "authenticated": true,
+  "user": {
+    "id": "user-id",
+    "email": "admin@example.com",
+    "role": "admin"
+  },
+  "session": {
+    "id": "session-id",
+    "userId": "user-id",
+    "expiresAt": "2024-01-15T10:00:00.000Z"
+  }
+}
+```
+
 ## Dependencies and Version Requirements
 
 **Frontend:**
@@ -324,3 +486,5 @@ export function createBetterAuthLogger(logger: Logger) {
 - TypeScript: 5.9.2
 - Drizzle ORM: 0.44.5+
 - Better-Auth: 1.3.9+
+- T3 Env: Latest (for type-safe environment variables)
+- Zod: Latest (for validation schemas)

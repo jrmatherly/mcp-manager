@@ -12,11 +12,14 @@
 
 **Frontend Security:**
 - Better-Auth for secure session management with Redis caching
-- Multi-provider SSO (Google, GitHub, Microsoft/Entra ID)
+- Multi-provider SSO (Google, GitHub, Microsoft/Entra ID) with automatic role mapping
 - httpOnly cookies for token storage
 - CSRF protection on state-changing operations
 - Content Security Policy (CSP) headers
 - API key authentication with rate limiting
+- Client-side route protection with role-based access control
+- Azure AD group-to-role mapping for enterprise authentication
+- T3 Env for type-safe environment variable validation
 
 ### Data Validation
 
@@ -108,7 +111,7 @@ MREG_FASTMCP_HOST=0.0.0.0
 
 ### Frontend Environment Variables
 
-Create `.env.local` for Next.js:
+Create `.env.local` for Next.js with T3 Env type-safe validation:
 
 ```bash
 # API Configuration
@@ -125,7 +128,7 @@ GITHUB_CLIENT_SECRET=your-github-client-secret
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Microsoft/Azure SSO (Enterprise SSO support)
+# Microsoft/Azure SSO (Enterprise SSO support with role mapping)
 AZURE_CLIENT_ID=your-azure-client-id
 AZURE_CLIENT_SECRET=your-azure-client-secret
 AZURE_TENANT_ID=common  # 'common' for multi-tenant, or your tenant ID
@@ -135,6 +138,65 @@ RESEND_API_KEY=your-resend-api-key
 
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/mcp_registry
+
+# Logging Configuration
+LOG_LEVEL=debug  # Server-side logging level
+NEXT_PUBLIC_LOG_LEVEL=info  # Client-side logging level
+NEXT_PUBLIC_LOG_BROWSER=true  # Enable browser logging in development
+```
+
+### T3 Env Configuration
+
+The project uses T3 Env for type-safe environment variable validation:
+
+```typescript
+// /src/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    // Server-only variables (never sent to client)
+    DATABASE_URL: z.string().url(),
+    BETTER_AUTH_SECRET: z.string().min(32),
+    AZURE_CLIENT_SECRET: z.string().min(1),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  },
+  client: {
+    // Client-side variables (must be prefixed with NEXT_PUBLIC_)
+    NEXT_PUBLIC_API_URL: z.string().url(),
+    NEXT_PUBLIC_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    NEXT_PUBLIC_LOG_BROWSER: z.string().transform(val => val === "true").default("false"),
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    AZURE_CLIENT_SECRET: process.env.AZURE_CLIENT_SECRET,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_LOG_LEVEL: process.env.NEXT_PUBLIC_LOG_LEVEL,
+  },
+});
+```
+
+### Azure AD Role Mapping Configuration
+
+Configure Azure AD groups to Better-Auth role mappings:
+
+```typescript
+// /lib/auth/config.ts
+export const APP_ROLE_MAPPINGS = {
+  azure: [
+    // Azure AD Security Groups (customize for your organization)
+    { azureRole: "SG WLH Admins", betterAuthRole: "admin", description: "WLH Admin Security Group" },
+    { azureRole: "SG MEM SSC Users", betterAuthRole: "user", description: "MEM SSC Users Security Group" },
+
+    // Azure AD app roles (if using Azure app role assignments)
+    { azureRole: "admin", betterAuthRole: "admin", description: "MCP Registry Gateway Administrator" },
+    { azureRole: "Server Owner", betterAuthRole: "server_owner", description: "MCP Server Owner" },
+    { azureRole: "User", betterAuthRole: "user", description: "Standard user role" },
+  ] as AzureRoleMapping[],
+};
 ```
 
 ### Development Environment Setup
@@ -170,6 +232,26 @@ DATABASE_URL=postgresql://user:password@localhost:5432/mcp_registry
 - Root `.env` - Docker Compose and fallback configuration
 - `frontend/.env.local` - Frontend Next.js configuration
 
+### Authentication Security Best Practices
+
+#### Microsoft OAuth Security
+- **Role Claim Validation**: Verify Azure AD group memberships and app role assignments
+- **Token Verification**: Validate OAuth tokens and extract role information securely
+- **Role Mapping**: Map Azure AD groups/roles to application-specific roles
+- **Session Persistence**: Store role information in secure session storage
+
+#### Client-Side Security
+- **Route Protection**: Use client-side components for authentication checking
+- **Graceful Degradation**: Redirect unauthorized users appropriately
+- **Loading States**: Show proper loading indicators during authentication checks
+- **Error Handling**: Log authentication failures for security monitoring
+
+#### Environment Variable Security
+- **Type Safety**: Use T3 Env for runtime validation of environment variables
+- **Server/Client Separation**: Ensure sensitive variables stay server-side only
+- **Validation**: Validate environment variables at build time
+- **Documentation**: Clear documentation of required vs optional variables
+
 ### Dependencies and Version Requirements
 
 **Backend:**
@@ -186,3 +268,5 @@ DATABASE_URL=postgresql://user:password@localhost:5432/mcp_registry
 - TypeScript: 5.9.2
 - Better-Auth: 1.3.9+
 - Drizzle ORM: 0.44.5+
+- T3 Env: Latest (type-safe environment variables)
+- Zod: Latest (validation schemas)

@@ -24,6 +24,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
+  // For admin paths, we'll let the client-side components handle role checking
+  // This allows for better error messages and user experience
+  // The actual role validation happens in the admin layout and page components
+  if (pathname.startsWith("/admin/")) {
+    // Session exists, let client components handle role validation
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 

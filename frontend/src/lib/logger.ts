@@ -37,8 +37,8 @@ interface LoggerConfig {
 // Environment detection
 const isServer = typeof window === "undefined";
 const isBrowser = !isServer;
-const isDevelopment = env.NODE_ENV === "development";
-const isProduction = env.NODE_ENV === "production";
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
 
 // Log levels with numeric values for comparison
 const LOG_LEVELS: Record<LogLevel, number> = {

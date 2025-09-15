@@ -7,8 +7,7 @@
 
 import { env } from "@/env";
 import { authLogger } from "@/lib/logger";
-import { createAuthMiddleware } from "better-auth/api";
-import type { AuthSession } from "@/types/better-auth";
+import { oauthRoleSyncMiddleware } from "@/hooks/use-oauth-role-sync";
 import {
   DEFAULT_PROVIDER_CONFIGURATIONS,
   type ProviderConfigurations,
@@ -129,115 +128,10 @@ export const ACCOUNT_CONFIG = {
 
 /**
  * OAuth callback hook configuration using Better-Auth middleware
+ * Uses the dedicated OAuth role synchronization middleware for cleaner separation of concerns
  */
 export const OAUTH_HOOKS = {
-  after: createAuthMiddleware(async (ctx) => {
-    // Enhanced logging for all OAuth callbacks
-    // Check both the path pattern and the actual request URL
-    const isMicrosoftCallback =
-      ctx.path?.includes("/callback/") && (ctx.path.includes("microsoft") || ctx.request?.url?.includes("/callback/microsoft"));
-
-    if (ctx.path?.includes("/callback/")) {
-      const provider = ctx.path.split("/callback/")[1];
-      authLogger.info("OAuth callback completed", {
-        provider,
-        path: ctx.path,
-        requestUrl: ctx.request?.url,
-        isMicrosoftCallback,
-        hasUser: !!ctx.context?.newSession?.user,
-        hasSession: !!ctx.context?.newSession,
-        hasAccount: !!ctx.context?.account,
-      });
-
-      // Detailed logging and role processing for Microsoft OAuth callback
-      // Check for Microsoft callback even if path shows :id
-      if (isMicrosoftCallback && ctx.context?.newSession?.user) {
-        authLogger.info("Microsoft OAuth callback details", {
-          hasUser: !!ctx.context?.newSession?.user,
-          hasSession: !!ctx.context?.newSession,
-          hasAccount: !!ctx.context?.account,
-          isNewUser: !!ctx.context?.isNewUser,
-          userId: ctx.context?.newSession?.user?.id,
-        });
-
-        // Since account might not be available in ctx.context, we'll use the user data
-        // The role has already been set in mapProfileToUser, so we need to persist it
-        if (ctx.context?.newSession?.user) {
-          const user = ctx.context.newSession.user as AuthSession["user"];
-
-          authLogger.info("Checking user role from OAuth callback", {
-            userId: user.id,
-            currentRole: user.role,
-            userEmail: user.email,
-          });
-
-          // The role was already mapped in mapProfileToUser
-          // Now we need to ensure it's persisted to the database
-          // For existing users, Better-Auth doesn't automatically update the role
-          if (user.id && user.role) {
-            authLogger.info("Persisting user role to database", {
-              userId: user.id,
-              role: user.role,
-            });
-
-            // Import the database and user schema to update the role
-            const { db } = await import("@/db");
-            const { user: userTable } = await import("@/db/schema/auth");
-            const { eq } = await import("drizzle-orm");
-
-            try {
-              // Update the user's role in the database
-              await db
-                .update(userTable)
-                .set({
-                  role: user.role,
-                  updatedAt: new Date(),
-                  lastLoginAt: new Date(),
-                })
-                .where(eq(userTable.id, user.id));
-
-              authLogger.info("User role successfully updated in database", {
-                userId: user.id,
-                role: user.role,
-              });
-            } catch (dbError) {
-              authLogger.error("Failed to update user role in database", {
-                error: String(dbError),
-                userId: user.id,
-                attemptedRole: user.role,
-              });
-            }
-          }
-        }
-
-        // Log user details after OAuth
-        if (ctx.context?.newSession?.user) {
-          const user = ctx.context.newSession.user;
-          authLogger.info("User created/updated after Microsoft OAuth", {
-            userId: user.id,
-            userRole: (user as AuthSession["user"]).role || "user",
-            userEmail: user.email,
-            userName: user.name,
-            emailVerified: user.emailVerified,
-            isNewUser: !!ctx.context?.isNewUser,
-          });
-        }
-
-        // Log account details
-        if (ctx.context?.account) {
-          const account = ctx.context.account;
-          authLogger.debug("Microsoft account details", {
-            accountId: account.id,
-            providerId: account.providerId,
-            providerAccountId: account.accountId,
-            hasAccessToken: !!account.accessToken,
-            hasIdToken: !!account.idToken,
-            hasRefreshToken: !!account.refreshToken,
-          });
-        }
-      }
-    }
-  }),
+  after: oauthRoleSyncMiddleware,
 };
 
 /**

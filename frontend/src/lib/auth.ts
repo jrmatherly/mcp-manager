@@ -37,6 +37,23 @@ export const auth = betterAuth({
   secondaryStorage: redisSecondaryStorage,
   // Integrated logger using existing logger infrastructure
   logger: betterAuthLogger as BetterAuthLogger,
+  // Database hooks to ensure role updates during OAuth
+  databaseHooks: {
+    user: {
+      update: {
+        before: async (user, _context) => {
+          // This hook runs before updating a user
+          // We need to return the proper format for Better-Auth
+          betterAuthLogger.debug("User update hook triggered", {
+            userId: user.id,
+            currentRole: user.role,
+          });
+          // Return data wrapper as required by Better-Auth
+          return { data: user };
+        },
+      },
+    },
+  },
   // OAuth hooks for provider-specific handling
   hooks: {
     after: OAUTH_HOOKS.after,
@@ -47,7 +64,10 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: "string",
+        required: false,
         defaultValue: "user",
+        // Important: Set input to false to prevent users from setting their own role
+        input: false,
       },
     },
   },
@@ -75,6 +95,8 @@ export const auth = betterAuth({
             clientId: env.GITHUB_CLIENT_ID,
             clientSecret: env.GITHUB_CLIENT_SECRET,
             ...GITHUB_OAUTH_CONFIG,
+            // Update user info on every sign-in to handle changes
+            overrideUserInfoOnSignIn: true,
           }
         : undefined,
     google:
@@ -83,6 +105,8 @@ export const auth = betterAuth({
             clientId: env.GOOGLE_CLIENT_ID,
             clientSecret: env.GOOGLE_CLIENT_SECRET,
             ...GOOGLE_OAUTH_CONFIG,
+            // Update user info on every sign-in to handle changes
+            overrideUserInfoOnSignIn: true,
           }
         : undefined,
     microsoft:
@@ -92,6 +116,8 @@ export const auth = betterAuth({
             clientSecret: env.AZURE_CLIENT_SECRET,
             tenantId: PROVIDER_CONFIGS.azure?.tenantId || env.AZURE_TENANT_ID,
             ...AZURE_OAUTH_CONFIG,
+            // CRITICAL: Update user info on every sign-in to handle role changes
+            overrideUserInfoOnSignIn: true,
             // Custom profile handler for Microsoft OAuth with role extraction
             mapProfileToUser: (profile: MicrosoftProfile) => {
               betterAuthLogger.debug("Processing Microsoft OAuth profile", {
@@ -166,14 +192,25 @@ export const auth = betterAuth({
                 });
               }
 
-              // Return normalized profile with mapped role
+              // CRITICAL: Based on the example project, when updating existing users,
+              // we should ONLY return the fields we want to update.
+              // For existing users, return minimal data to avoid overwriting
+              // The example project returns only { role: mappedRole }
+
+              // Always return the role, but for existing users, don't override other fields
               return {
-                id: profile.id || profile.sub,
-                name: profile.name || profile.displayName,
-                email: profile.email || profile.mail || profile.userPrincipalName,
-                image: profile.picture,
-                emailVerified: !!profile.email_verified,
                 role: mappedRole,
+                // Only update other fields if they're missing (for new users)
+                ...(!(profile.email || profile.mail || profile.userPrincipalName)
+                  ? {}
+                  : {
+                      email: profile.email || profile.mail || profile.userPrincipalName,
+                    }),
+                ...(!(profile.name || profile.displayName)
+                  ? {}
+                  : {
+                      name: profile.name || profile.displayName,
+                    }),
               };
             },
           }
