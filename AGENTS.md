@@ -15,19 +15,20 @@ Enterprise-grade MCP (Model Context Protocol) Registry, Gateway, and Proxy Syste
 
 ```bash
 cd backend
-uv sync                               # Install dependencies
+uv sync                                        # Install dependencies
 uv run mcp-gateway serve --reload --port 8000  # Dev server
-uv run pytest                         # Run tests
-uv run ruff check . && uv run mypy .  # Quality checks
-uv run alembic upgrade head           # Apply migrations
+uv run pytest                                  # Run tests
+uv run ruff check . && uv run mypy .           # Quality checks
 ```
+
+**Architecture Note**: Backend follows operational-only pattern - no database table creation or schema management. All schema operations are handled by the frontend TypeScript stack.
 
 ### Frontend (Next.js/React)
 **CRITICAL**: All database management is now in the frontend (TypeScript).
 
 ```bash
 cd frontend
-npm install                           # Install dependencies
+npm install                          # Install dependencies
 npm run db:setup:full                # Complete automated DB setup (create, migrate, optimize, apply all SQL)
 npm run dev                          # Dev server (--turbopack)
 npm run build                        # Production build
@@ -139,13 +140,27 @@ These files run as standalone Node.js scripts outside the Next.js runtime and ca
 - **Environment Variable Handling**: T3 Env for type-safe configuration with client/server separation
 - **Debug Capabilities**: Session debugging endpoint for authentication troubleshooting
 
-### Database Management (Important Changes)
-- **Fully Automated Setup**: `npm run db:setup:full` now handles everything automatically
-- **Unified in Frontend**: All database operations moved from Python to TypeScript
-- **SQL Consolidation**: All SQL files consolidated in `frontend/drizzle/sql/`
-- **Auto-Applied Optimizations**: Extensions, 38 indexes, functions, and views applied automatically
-- **Setup Script**: Database setup via `frontend/src/db/setup.ts` (replaces Python scripts)
-- **Archived Scripts**: Python database scripts moved to `backend/scripts/archive/`
+### Architecture Separation (Critical Changes)
+
+**Frontend (TypeScript/Drizzle) Responsibilities:**
+- Database schema definition and management
+- Table creation, migrations, and index management
+- Better-Auth integration and user management
+- All SQL operations (`frontend/drizzle/sql/`)
+- Database setup via `frontend/src/db/setup.ts`
+
+**Backend (Python/FastAPI) Responsibilities:**
+- Operational database updates (health status, metrics)
+- Request/response logging and monitoring
+- MCP server proxy and routing operations
+- Connection management and read operations
+- No table creation or schema modifications
+
+**Key Architectural Principles:**
+- Clean separation: Frontend owns schema, Backend owns operations
+- No duplicate database operations or competing migrations
+- Unified single-server architecture with path-based routing
+- Middleware uses singleton pattern to prevent metric conflicts
 
 ## Detailed Documentation
 
@@ -167,6 +182,14 @@ For comprehensive guides, see:
 **Testing**: Vitest with BigInt support, PostgreSQL integration, comprehensive database optimization test suite
 
 ## ⚠️ Critical Rules
+
+### Backend Architecture (Post-Remediation)
+- **No Legacy Endpoints**: All `/legacy/mcp/*` routes removed from codebase
+- **Singleton Metrics**: Prometheus metrics use singleton pattern to prevent registration conflicts
+- **Direct Middleware Imports**: No conditional middleware loading, all imports are direct
+- **Operational-Only Database**: Backend only performs operational updates, never creates tables
+- **Clean Startup**: Backend starts without warnings or deprecated endpoint messages
+- **Path-Based Auth**: Authentication middleware protects `/mcp/*` endpoints only
 
 ### Agent Delegation & Parallel Execution
 - **MANDATORY**: Use specialized agents when available (better-auth-orchestrator, enhanced-database-expert, etc.)

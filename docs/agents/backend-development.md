@@ -28,15 +28,12 @@ uv run ruff format .                   # formatting
 uv run black .                         # alternative formatter
 uv run mypy .                          # type checking
 
-# Database operations
-uv run alembic upgrade head                          # apply migrations
-uv run alembic revision --autogenerate -m "message" # create migration
-uv run alembic downgrade -1                          # rollback one migration
-
 # CLI commands
 uv run mcp-gateway                     # main CLI
 uv run mcp-demo                        # demo mode
 ```
+
+**IMPORTANT**: Backend no longer manages database schema or migrations. All database operations are handled by the frontend TypeScript/Drizzle stack.
 
 ## Code Style
 
@@ -119,6 +116,9 @@ except MCPGatewayError as e:
 - Test location: `backend/tests/` directory
 - Test markers: `@pytest.mark.unit`, `@pytest.mark.integration`, `@pytest.mark.slow`
 
+### Testing Philosophy
+**CRITICAL**: Tests should focus on operational functionality only - no database schema testing.
+
 ### Testing Conventions
 ```python
 # Test file structure
@@ -156,5 +156,35 @@ async def test_user_creation_with_valid_data():
 - Python: >= 3.10, < 3.13
 - FastAPI: >= 0.114.2
 - FastMCP: >= 0.4.0
-- PostgreSQL: >= 13
-- Redis: >= 6
+- PostgreSQL: >= 17 (schema managed by frontend)
+- Redis: >= 8
+
+## Architecture Overview (Post-Remediation)
+
+### Clean Architecture Principles
+The backend now follows a strict operational-only pattern:
+
+**What the Backend Does:**
+- Handles MCP server proxy requests and routing
+- Performs operational database updates (health status, metrics)
+- Manages request/response logging and monitoring
+- Provides connection management and read operations
+- Serves Prometheus metrics and health endpoints
+
+**What the Backend Does NOT Do:**
+- Create or modify database tables or schema
+- Run database migrations or DDL operations
+- Manage user authentication schema (handled by Better-Auth in frontend)
+- Duplicate any database operations performed by frontend
+
+### Middleware Architecture
+- **Singleton Pattern**: All middleware components use singleton pattern to prevent conflicts
+- **Direct Imports**: No conditional middleware loading, all imports are explicit
+- **Path-Based Auth**: Authentication middleware only protects `/mcp/*` endpoints
+- **Metrics Integration**: Prometheus metrics prevent duplicate collector registration
+
+### No Legacy Code
+- All `/legacy/mcp/*` routes have been completely removed
+- No backward compatibility endpoints or deprecated functionality
+- Clean startup with no warnings about legacy systems
+- Greenfield architecture with modern patterns only

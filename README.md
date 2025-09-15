@@ -32,11 +32,27 @@ For detailed setup instructions, see **[QUICKSTART.md](./QUICKSTART.md)**.
 
 ## Architecture
 
-- **Backend**: Python FastAPI with FastMCP integration in `/backend`
-- **Frontend**: Next.js 15.5.3 with React 19.1.1 application in `/frontend`
-- **Database**: PostgreSQL with Drizzle ORM (unified database management in frontend)
-- **Authentication**: Better-Auth with session management and role-based access control
-- **Logging**: Centralized logging utility with environment-aware configuration
+The system follows a clean separation-of-concerns architecture:
+
+### Frontend (TypeScript/Next.js)
+- **Next.js 15.5.3** with React 19.1.1 application in `/frontend`
+- **Database Management**: PostgreSQL schema definition and management via Drizzle ORM
+- **Authentication**: Better-Auth with multi-provider OAuth and session management
+- **User Interface**: Admin dashboards, user management, and system configuration
+- **Database Operations**: All DDL operations, migrations, and schema modifications
+
+### Backend (Python/FastAPI)
+- **FastAPI** with FastMCP integration for MCP protocol handling in `/backend`
+- **Operational Updates**: Database operational updates (health status, metrics, logging)
+- **MCP Gateway**: Server proxy, routing, and protocol translation
+- **Monitoring**: Prometheus metrics, health checks, and system observability
+- **Connection Management**: Database connection pooling and read operations only
+
+### Key Architectural Principles
+- **No Overlap**: Frontend owns schema, Backend owns operations
+- **Single Responsibility**: Each stack has clearly defined, non-overlapping responsibilities
+- **Clean Integration**: Both systems work with the same PostgreSQL database without conflicts
+- **Modern Stack**: TypeScript for type safety, Python for high-performance operations
 
 ## Key Features
 
@@ -55,6 +71,9 @@ For detailed setup instructions, see **[QUICKSTART.md](./QUICKSTART.md)**.
 - **Production-Ready Logging**: Structured logging utility replacing all console.log statements
 - **Automated Database Setup**: Complete setup with `npm run db:setup:full`
 - **Migration Management**: Automated database migrations with rollback support
+- **Clean Architecture**: No legacy code, deprecated endpoints, or backward compatibility layers
+- **Singleton Patterns**: Middleware components prevent metric registration conflicts
+- **Path-Based Security**: Authentication protects only necessary endpoints (`/mcp/*`)
 
 ### Authentication & Security
 - **Multi-Provider SSO**: Google, GitHub, and Microsoft/Entra ID integration
@@ -83,7 +102,10 @@ The application uses a comprehensive, production-optimized database schema inclu
 - **Time-Series Optimization**: Specialized indexes for metrics and request logs
 - **Maintenance Automation**: Scheduled optimization tasks and analytics updates
 
-### Schema Compatibility
+### Schema Architecture
+- **Frontend-Managed Schema**: All table definitions, indexes, and DDL operations in TypeScript
 - **Better-Auth Integration**: Full compatibility with Better-Auth authentication flows
-- **Backend Compatibility**: Schema alignment with Python FastAPI backend
+- **Backend Operational Layer**: Python backend performs only operational updates and reads
 - **Type Safety**: Complete TypeScript types generated from Drizzle schema
+- **No Schema Conflicts**: Clear separation prevents competing migrations or duplicate operations
+- **Production Optimizations**: 38 strategic indexes and 3 monitoring views managed by frontend

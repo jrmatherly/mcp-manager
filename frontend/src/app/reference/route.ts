@@ -7,7 +7,6 @@ import {
   createScalarAuthConfig,
   createRoleBasedCSS,
   getCDNConfig,
-  createScalarCallbacks,
   createServerConfig,
   validateSchemaType,
   getSchemaUrl,
@@ -49,9 +48,8 @@ async function createScalarConfig(request: NextRequest) {
   // Get the appropriate schema URL
   const spec = getSchemaUrl(baseUrl, schemaType);
 
-  // Create enhanced Scalar configuration
+  // Create enhanced Scalar configuration with recursion safety
   const authConfig = createScalarAuthConfig(session);
-  const callbacks = createScalarCallbacks(userRole);
 
   return {
     url: spec,
@@ -63,23 +61,26 @@ async function createScalarConfig(request: NextRequest) {
     hideModels: false,
     hideDownloadButton: false,
     darkMode: true,
-    // Performance optimizations
+    // Performance and safety optimizations
     withDefaultFonts: false, // Use system fonts for better performance
-    cdn: getCDNConfig(process.env.NODE_ENV === "production"),
+    cdn: getCDNConfig(process.env.NODE_ENV === "production") || undefined,
+    // Recursion prevention: Disable callbacks to prevent evaluation loops
+    // Callbacks were causing recursion in Scalar 1.25.11
+    onServerChange: undefined,
+    onRequestSent: undefined,
+    onSpecUpdate: undefined,
     // Authentication configuration
     authentication: authConfig,
-    // Callback handlers for enhanced UX and analytics
-    ...callbacks,
-    // Role-based styling
+    // Role-based styling (simplified to avoid serialization issues)
     customCss: createRoleBasedCSS(userRole),
+    // Minimal metadata to reduce complexity
     metaData: {
       title: "MCP Registry Gateway API",
       description: "Enterprise-grade MCP (Model Context Protocol) Registry, Gateway, and Proxy System API documentation",
       version: "1.0.0",
-      termsOfService: `${baseUrl}/terms`,
+      // Simplify contact info to prevent potential circular references
       contact: {
         name: "API Support",
-        url: `${baseUrl}/support`,
         email: "jason@matherly.net",
       },
       license: {
@@ -89,6 +90,9 @@ async function createScalarConfig(request: NextRequest) {
     },
     // Environment-aware server configuration
     servers: createServerConfig(baseUrl, process.env.BACKEND_URL),
+    // Additional safety configurations
+    skipLinkHeader: true, // Prevent link header processing that could cause issues
+    baseServerURL: baseUrl, // Explicit base URL to prevent resolution issues
   };
 }
 
@@ -103,33 +107,92 @@ async function createScalarConfig(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const schemaType = searchParams.get("schema") || "combined";
+
+    apiLogger.debug("Starting Scalar API reference rendering", {
+      schemaType,
+      userAgent: request.headers.get("user-agent"),
+      url: request.url,
+    });
+
     const config = await createScalarConfig(request);
 
-    // Create the Scalar API reference handler with dynamic config
-    const handler = ApiReference(config);
+    apiLogger.debug("Scalar configuration created successfully", {
+      schemaType,
+      configKeys: Object.keys(config),
+      hasAuth: !!config.authentication,
+      serverCount: config.servers?.length || 0,
+    });
 
-    // Call the handler (no arguments needed) to get the Response
-    return await handler();
+    // Create the Scalar API reference handler with dynamic config
+    // Use try-catch around handler creation to catch initialization errors
+    let handler: () => Promise<Response>;
+    try {
+      handler = ApiReference(config);
+      apiLogger.debug("Scalar handler created successfully");
+    } catch (handlerError) {
+      apiLogger.error("Failed to create Scalar handler", {
+        error: handlerError instanceof Error ? handlerError.message : "Unknown handler error",
+        stack: handlerError instanceof Error ? handlerError.stack : undefined,
+        config: JSON.stringify(config, null, 2).substring(0, 1000) + "...", // Truncated config for debugging
+      });
+      throw handlerError;
+    }
+
+    // Call the handler with additional error catching
+    let response: Response;
+    try {
+      response = await handler();
+      apiLogger.debug("Scalar handler executed successfully", {
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+      });
+    } catch (renderError) {
+      apiLogger.error("Failed to render Scalar documentation", {
+        error: renderError instanceof Error ? renderError.message : "Unknown render error",
+        stack: renderError instanceof Error ? renderError.stack : undefined,
+        isRecursionError: renderError instanceof Error && renderError.message.includes("recursion"),
+      });
+      throw renderError;
+    }
+
+    return response;
   } catch (error) {
+    const isRecursionError =
+      error instanceof Error && (error.message.includes("recursion") || error.message.includes("Maximum call stack"));
+
     apiLogger.error("Failed to serve API documentation", {
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
+      isRecursionError,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
     });
 
-    // Fallback error response
-    return new Response(
-      JSON.stringify({
-        error: "Documentation Error",
-        message: "Failed to load API documentation",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
+    // Enhanced fallback error response with more details for recursion issues
+    const errorDetails = {
+      error: "Documentation Error",
+      message: isRecursionError
+        ? "Recursion error detected in API documentation rendering. This has been logged for investigation."
+        : "Failed to load API documentation",
+      details: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
+      ...(isRecursionError && {
+        troubleshooting: {
+          issue: "Scalar recursion error",
+          version: "1.25.11",
+          mitigation: "Schema preprocessing and callback disabling applied",
+          suggestion: "Try refreshing or contact support if issue persists",
         },
+      }),
+    };
+
+    return new Response(JSON.stringify(errorDetails, null, 2), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
-    );
+    });
   }
 }

@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import get_settings
 from ..core.exceptions import FastMCPAuthenticationError
-from ..db.database import get_async_session
+from ..db.database import get_session
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ class APIKeyValidator:
                 logger.warning(f"Redis cache read failed: {e}")
 
         # Query Better-Auth's apiKey table
-        async with session or get_async_session() as db_session:
+        async for db_session in session or get_session():
             try:
                 # Hash the provided API key for comparison
                 key_hash = self._hash_api_key(api_key)

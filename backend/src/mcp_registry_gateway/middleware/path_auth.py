@@ -68,7 +68,6 @@ class PathBasedAuthMiddleware(BaseHTTPMiddleware):
         # API paths that are public by design
         self.api_prefixes = {
             "/api/v1/",  # REST API is intentionally unauthenticated
-            "/legacy/",  # Legacy endpoints are also unauthenticated
         }
 
         self.require_auth_for_mcp = require_auth_for_mcp

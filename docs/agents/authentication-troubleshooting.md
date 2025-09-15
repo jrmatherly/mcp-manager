@@ -1,4 +1,64 @@
-# Authentication Troubleshooting Guide
+# Authentication Troubleshooting
+
+## Backend Architecture Troubleshooting (Post-Remediation)
+
+### Clean Startup Validation
+
+**Expected Behavior**: Backend should start without warnings or error messages.
+
+**Common Issues After Remediation**:
+
+1. **Legacy Endpoint References (FIXED)**
+   - ❌ **Old Issue**: Log showed "Legacy endpoints available at /legacy/mcp/* (deprecated)"
+   - ✅ **Resolution**: All legacy routes completely removed from codebase
+   - **Validation**: Check startup logs - should show no legacy endpoint messages
+
+2. **Middleware Import Warnings (FIXED)**
+   - ❌ **Old Issue**: "ErrorHandlingMiddleware not available, skipping"
+   - ❌ **Old Issue**: "AuthenticationMiddleware requested but not available"
+   - ✅ **Resolution**: All middleware imports are now direct, no conditional loading
+   - **Validation**: Backend starts without middleware warnings
+
+3. **Prometheus Metrics Conflicts (FIXED)**
+   - ❌ **Old Issue**: "Duplicated timeseries in CollectorRegistry"
+   - ✅ **Resolution**: Singleton pattern prevents duplicate metric registration
+   - **Validation**: No Redis warnings about duplicated metrics
+
+### Architecture Validation Commands
+
+```bash
+# Verify clean backend startup
+cd backend
+uv run mcp-gateway serve --reload --port 8000
+
+# Expected output should NOT contain:
+# - "Legacy endpoints available"
+# - "ErrorHandlingMiddleware not available"
+# - "AuthenticationMiddleware requested but not available"
+# - "Duplicated timeseries in CollectorRegistry"
+
+# Expected output SHOULD contain:
+# - "Unified FastAPI application created successfully"
+# - "MCP routes added to FastAPI application"
+# - "Path-based authentication middleware added"
+```
+
+### Database Architecture Validation
+
+```bash
+# Frontend owns all database operations
+cd frontend
+npm run db:health                    # Should work
+npm run db:setup:full               # Should create all tables
+
+# Backend should connect but not create tables
+cd backend
+uv run mcp-gateway serve            # Should connect to existing database
+```
+
+**Key Architectural Principle**: Frontend creates schema, Backend uses operational updates only.
+
+## Authentication Troubleshooting Guide
 
 Comprehensive guide for diagnosing and resolving authentication issues in the MCP Registry Gateway.
 

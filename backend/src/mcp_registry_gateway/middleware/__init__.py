@@ -6,7 +6,11 @@ and rate limiting in the FastMCP server integration.
 """
 
 from .audit import AuditLoggingMiddleware
+
+# Direct imports of middleware components
+from .auth_middleware import AuthenticationMiddleware, AuthorizationMiddleware
 from .base import BaseMiddleware
+from .error_handling import ErrorHandlingMiddleware
 from .metrics import MetricsMiddleware, get_metrics_data, get_metrics_middleware
 from .rate_limit import (
     AdvancedRateLimitMiddleware,
@@ -18,20 +22,13 @@ from .rate_limit import (
 from .tool_access import ToolAccessControlMiddleware
 
 
-# Import new middleware components when they exist
-try:
-    from .auth_middleware import AuthenticationMiddleware, AuthorizationMiddleware
-    from .error_handling import ErrorHandlingMiddleware
-
-    _has_new_middleware = True
-except ImportError:
-    _has_new_middleware = False
-
-
 __all__ = [
     "AdvancedRateLimitMiddleware",
     "AuditLoggingMiddleware",
+    "AuthenticationMiddleware",
+    "AuthorizationMiddleware",
     "BaseMiddleware",
+    "ErrorHandlingMiddleware",
     "MetricsMiddleware",
     "RateLimitMiddleware",
     "ToolAccessControlMiddleware",
@@ -41,12 +38,3 @@ __all__ = [
     "initialize_rate_limiting",
     "shutdown_rate_limiting",
 ]
-
-if _has_new_middleware:
-    __all__.extend(
-        [
-            "AuthenticationMiddleware",
-            "AuthorizationMiddleware",
-            "ErrorHandlingMiddleware",
-        ]
-    )

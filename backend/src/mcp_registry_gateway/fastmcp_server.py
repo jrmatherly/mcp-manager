@@ -27,8 +27,8 @@ from .middleware import (
     AuthenticationMiddleware,
     AuthorizationMiddleware,
     ErrorHandlingMiddleware,
-    MetricsMiddleware,
     ToolAccessControlMiddleware,
+    get_metrics_middleware,
 )
 from .middleware.rate_limit import get_advanced_rate_limit_middleware
 from .middleware.tracing import DistributedTracingMiddleware
@@ -131,7 +131,8 @@ class MCPRegistryGatewayServer:
             if hasattr(self.mcp_server, "add_middleware"):
                 self.mcp_server.add_middleware(
                     ErrorHandlingMiddleware(
-                        include_traceback=self.settings.debug, track_error_stats=True
+                        include_traceback=self.settings.debug,
+                        track_error_stats=True,
                     )
                 )
                 logger.debug("Added ErrorHandlingMiddleware")
@@ -146,7 +147,7 @@ class MCPRegistryGatewayServer:
                     )
 
                 # 3. Metrics collection (captures all activity)
-                self.mcp_server.add_middleware(MetricsMiddleware())
+                self.mcp_server.add_middleware(get_metrics_middleware())
                 logger.debug("Added MetricsMiddleware")
 
                 # 3. Authentication verification (if enabled)

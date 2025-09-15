@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import the existing FastAPI routes and handlers
 from .api.main import (
     HealthResponse,
-    MCPProxyResponse,
     ServerResponse,
     cancel_proxy_request,
     discover_resources,
@@ -27,8 +26,6 @@ from .api.main import (
     get_system_stats,
     list_servers,
     mcp_error_handler,
-    proxy_mcp_request,
-    proxy_mcp_request_simple,
     readiness_check,
     register_server,
     unregister_server,
@@ -37,9 +34,13 @@ from .api.main import (
     health_check as api_health_check,
 )
 from .api.mcp_routes import add_mcp_routes
+from .api.schema_config import (
+    configure_sqlmodel_schema_exclusions,
+    create_safe_openapi_schema,
+)
 from .core.config import get_settings
 from .core.exceptions import MCPGatewayError
-from .db.database import close_database, create_tables, startup_database
+from .db.database import close_database, startup_database
 from .middleware.path_auth import add_path_based_auth_middleware
 from .routing.router import get_router
 from .services.proxy import get_proxy_service
@@ -59,10 +60,14 @@ async def unified_lifespan(app: FastAPI):
     """
     logger.info("Starting MCP Registry Gateway (Unified Architecture)")
 
-    # Initialize database connections
+    # Initialize database connections (no table creation - handled by frontend)
     logger.info("Initializing database connections...")
     await startup_database()
-    await create_tables()
+    # NOTE: Database tables are managed by the frontend, not created here
+
+    # Configure SQLModel schema exclusions to prevent circular references
+    logger.info("Configuring schema exclusions to prevent circular references...")
+    configure_sqlmodel_schema_exclusions()
 
     # Initialize core services
     logger.info("Initializing core services...")
@@ -284,21 +289,40 @@ def create_unified_app() -> FastAPI:
     # Add MCP-specific routes (authenticated endpoints at /mcp/*)
     add_mcp_routes(app)
 
-    # Legacy MCP proxy endpoints (for backward compatibility)
-    # These will eventually be deprecated in favor of /mcp/* routes
-    app.add_api_route(
-        "/legacy/mcp/proxy",
-        proxy_mcp_request,
-        methods=["POST"],
-        response_model=MCPProxyResponse,
-        deprecated=True,
-    )
-    app.add_api_route(
-        "/legacy/mcp",
-        proxy_mcp_request_simple,
-        methods=["POST"],
-        deprecated=True,
-    )
+    # Configure custom OpenAPI schema generation to prevent circular references
+    def custom_openapi():
+        return create_safe_openapi_schema(app)
+
+    app.openapi = custom_openapi
+
+    # Add safe schema endpoint for frontend consumption
+    @app.get("/api/docs/backend-schema")
+    async def get_backend_schema():
+        """
+        Get backend OpenAPI schema with circular reference prevention.
+
+        This endpoint provides a safe schema that can be consumed by the frontend
+        without causing recursion issues in Scalar or other documentation tools.
+        """
+        try:
+            safe_schema = create_safe_openapi_schema(app)
+            return safe_schema
+        except Exception as e:
+            logger.error(f"Failed to generate safe backend schema: {e}")
+            # Return a minimal fallback schema
+            return {
+                "openapi": "3.1.0",
+                "info": {
+                    "title": "MCP Registry Gateway - Backend API",
+                    "version": settings.app_version,
+                    "description": "Backend API endpoints (schema generation failed)",
+                },
+                "paths": {},
+                "components": {"schemas": {}},
+                "tags": [{"name": "Backend", "description": "Backend API endpoints"}],
+            }
+
+    # No legacy endpoints needed - this is a greenfield project
 
     logger.info("Unified FastAPI application created successfully")
     logger.info(
@@ -308,7 +332,9 @@ def create_unified_app() -> FastAPI:
         f"Authentication: {'enabled' if settings.fastmcp.azure_tenant_id else 'disabled'}"
     )
     logger.info("MCP endpoints available at /mcp/* with authentication")
-    logger.info("Legacy endpoints available at /legacy/mcp/* (deprecated)")
+    logger.info(
+        "Custom OpenAPI schema generation enabled to prevent circular references"
+    )
 
     return app
 

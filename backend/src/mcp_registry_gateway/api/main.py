@@ -22,7 +22,7 @@ from ..core.exceptions import (
     ProxyError,
     ServerUnavailableError,
 )
-from ..db.database import close_database, create_tables, startup_database
+from ..db.database import close_database, startup_database
 from ..db.models import ServerStatus, TransportType
 from ..middleware.metrics import get_metrics_data
 from ..routing.router import get_router
@@ -131,11 +131,9 @@ async def lifespan(_app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting MCP Registry Gateway")
 
-    # Initialize database connections
+    # Initialize database connections (no table creation - handled by frontend)
     await startup_database()
-
-    # Create database tables
-    await create_tables()
+    # NOTE: Database tables are managed by the frontend, not created here
 
     # Initialize services
     await get_registry_service()

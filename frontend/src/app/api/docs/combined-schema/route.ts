@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { apiLogger } from "@/lib/logger";
+import { createSafeSchemaConfig } from "@/lib/scalar-utils";
 import type { OpenAPIV3 } from "openapi-types";
 
 /**
@@ -87,8 +88,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Merge the schemas
-    const combinedSchema: OpenAPIV3.Document = {
+    // Merge the schemas with safety preprocessing
+    const rawCombinedSchema: OpenAPIV3.Document = {
       openapi: "3.0.3",
       info: {
         title: "MCP Registry Gateway - Complete API",
@@ -256,6 +257,16 @@ For API support, please contact us at api@mcp-registry.com or visit our support 
       },
       security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }, { SessionAuth: [] }],
     };
+
+    // Apply safety preprocessing to prevent recursion issues
+    const combinedSchema = createSafeSchemaConfig(rawCombinedSchema);
+
+    apiLogger.info("Combined schema generated with safety preprocessing", {
+      authPaths: Object.keys(authSchema.paths || {}).length,
+      appPaths: Object.keys(appSchema?.paths || {}).length,
+      backendPaths: Object.keys(backendSchema?.paths || {}).length,
+      totalPaths: Object.keys(combinedSchema.paths || {}).length,
+    });
 
     return NextResponse.json(combinedSchema, {
       status: 200,
