@@ -107,7 +107,7 @@
     "nextjs-toploader": "^3.9.17",
     "pg": "^8.16.3",
     "react": "^19.1.1",
-    "react-day-picker": "9.9.0",
+    "react-day-picker": "9.10.0",
     "react-dom": "^19.1.1",
     "react-error-boundary": "^6.0.0",
     "react-grid-layout": "^1.5.2",

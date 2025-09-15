@@ -7,9 +7,7 @@
  */
 
 import { authLogger, type LogContext } from "@/lib/logger";
-
-// Better-Auth role type
-export type BetterAuthRole = "admin" | "server_owner" | "user";
+import type { BetterAuthRole } from "@/types/better-auth";
 
 // Google role mapping configuration based on email domains or specific emails
 export interface GoogleRoleMapping {

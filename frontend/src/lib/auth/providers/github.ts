@@ -6,9 +6,7 @@
  */
 
 import { authLogger, type LogContext } from "@/lib/logger";
-
-// Better-Auth role type
-export type BetterAuthRole = "admin" | "server_owner" | "user";
+import type { BetterAuthRole } from "@/types/better-auth";
 
 // GitHub role mapping configuration
 export interface GitHubRoleMapping {

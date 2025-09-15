@@ -367,53 +367,59 @@ export function createBetterAuthLogger(logger: Logger) {
   const loggerConfig = Reflect.get(logger, "config") as LoggerConfig | undefined;
   const enableColors = loggerConfig?.enableColors ?? true;
 
+  const logMethod = (level: "debug" | "info" | "warn" | "error", message: string, ...args: unknown[]) => {
+    // Add Better-Auth context to all log messages
+    const betterAuthPrefix = "[Better-Auth]";
+    // Convert Better-Auth log call to our logger format
+    const context: LogContext = {};
+
+    // Process additional arguments into context
+    if (args.length > 0) {
+      args.forEach((arg, index) => {
+        if (typeof arg === "object" && arg !== null) {
+          // Merge objects into context
+          Object.assign(context, arg);
+        } else {
+          // Add primitive values as indexed properties
+          context[`arg${index}`] = arg;
+        }
+      });
+    }
+
+    // Add Better-Auth specific context
+    context.component = "better-auth";
+
+    // Call appropriate logger method with context if available
+    const logContext = Object.keys(context).length > 0 ? context : { component: "better-auth" };
+    const formattedMessage = `${betterAuthPrefix} ${message}`;
+
+    switch (level) {
+      case "debug":
+        logger.debug(formattedMessage, logContext);
+        break;
+      case "info":
+        logger.info(formattedMessage, logContext);
+        break;
+      case "warn":
+        logger.warn(formattedMessage, logContext);
+        break;
+      case "error":
+        logger.error(formattedMessage, logContext);
+        break;
+      default:
+        logger.info(formattedMessage, logContext);
+    }
+  };
+
   return {
     disabled: false,
     disableColors: !enableColors,
     level: logger.getLevel() as "debug" | "info" | "warn" | "error",
-    log: (level: "debug" | "info" | "warn" | "error", message: string, ...args: unknown[]) => {
-      // Add Better-Auth context to all log messages
-      const betterAuthPrefix = "[Better-Auth]";
-      // Convert Better-Auth log call to our logger format
-      const context: LogContext = {};
-
-      // Process additional arguments into context
-      if (args.length > 0) {
-        args.forEach((arg, index) => {
-          if (typeof arg === "object" && arg !== null) {
-            // Merge objects into context
-            Object.assign(context, arg);
-          } else {
-            // Add primitive values as indexed properties
-            context[`arg${index}`] = arg;
-          }
-        });
-      }
-
-      // Add Better-Auth specific context
-      context.component = "better-auth";
-
-      // Call appropriate logger method with context if available
-      const logContext = Object.keys(context).length > 0 ? context : { component: "better-auth" };
-      const formattedMessage = `${betterAuthPrefix} ${message}`;
-
-      switch (level) {
-        case "debug":
-          logger.debug(formattedMessage, logContext);
-          break;
-        case "info":
-          logger.info(formattedMessage, logContext);
-          break;
-        case "warn":
-          logger.warn(formattedMessage, logContext);
-          break;
-        case "error":
-          logger.error(formattedMessage, logContext);
-          break;
-        default:
-          logger.info(formattedMessage, logContext);
-      }
-    },
+    log: logMethod,
+    debug: (message: string, ...args: unknown[]) => logMethod("debug", message, ...args),
+    info: (message: string, ...args: unknown[]) => logMethod("info", message, ...args),
+    warn: (message: string, ...args: unknown[]) => logMethod("warn", message, ...args),
+    error: (message: string, ...args: unknown[]) => logMethod("error", message, ...args),
   };
 }
 

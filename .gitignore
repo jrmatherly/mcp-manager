@@ -36,3 +36,5 @@ docs/ARCHIVED
 docs/example_frontend_project
 DELETE_PENDING/
 DELETE_PENDING/example_frontend_project/
+azure_manifest.json
+login-logs.txt

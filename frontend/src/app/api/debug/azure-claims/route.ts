@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { authLogger } from "@/lib/logger";
 import { type NextRequest, NextResponse } from "next/server";
+import type { AuthSession } from "@/types/better-auth";
 
 /**
  * Debug endpoint to examine Azure AD token claims
@@ -15,7 +16,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Only allow admins to access this debug endpoint
-    if (!session || session.user?.role !== "admin") {
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
+    }
+
+    const userWithRole = session.user as AuthSession["user"];
+    if (userWithRole.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
     }
 
@@ -44,7 +50,7 @@ export async function GET(request: NextRequest) {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        role: session.user.role,
+        role: userWithRole.role,
       },
       microsoftAccount: {
         accountId: microsoftAccount?.accountId,
@@ -55,7 +61,7 @@ export async function GET(request: NextRequest) {
       },
       tokenDebugging: debugInfo,
       roleMapping: {
-        currentUserRole: session.user.role,
+        currentUserRole: userWithRole.role,
         explanation: "Role assignment is handled during OAuth callback",
         instructions: [
           "1. Check if your Azure AD application has app roles defined",

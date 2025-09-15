@@ -8,7 +8,10 @@
 import { env } from "@/env";
 import { authLogger } from "@/lib/logger";
 import { createAuthMiddleware } from "better-auth/api";
+import type { AuthSession } from "@/types/better-auth";
 import {
+  extractRolesFromTokens,
+  mapAzureRolesToBetterAuth,
   DEFAULT_PROVIDER_CONFIGURATIONS,
   type ProviderConfigurations,
   type AzureRoleMapping,
@@ -22,8 +25,17 @@ import {
  */
 export const APP_ROLE_MAPPINGS = {
   azure: [
-    // Add your Azure AD app role mappings here
-    // Example: { azureRole: "MyApp.Admin", betterAuthRole: "admin", description: "Custom app admin" },
+    // Azure AD Security Groups (actual groups from your organization)
+    { azureRole: "SG WLH Admins", betterAuthRole: "admin", description: "WLH Admin Security Group" },
+    { azureRole: "SG MEM SSC Users", betterAuthRole: "user", description: "MEM SSC Users Security Group" },
+
+    // Azure AD app role mappings for MCP Registry Gateway (if using app roles)
+    { azureRole: "admin", betterAuthRole: "admin", description: "MCP Registry Gateway Administrator" },
+    { azureRole: "Admin", betterAuthRole: "admin", description: "Administrator role (capitalized)" },
+    { azureRole: "Administrator", betterAuthRole: "admin", description: "Generic administrator" },
+    { azureRole: "Server Owner", betterAuthRole: "server_owner", description: "MCP Server Owner" },
+    { azureRole: "ServerOwner", betterAuthRole: "server_owner", description: "Server owner (no spaces)" },
+    { azureRole: "User", betterAuthRole: "user", description: "Standard user role" },
   ] as AzureRoleMapping[],
 
   google: [
@@ -122,21 +134,144 @@ export const ACCOUNT_CONFIG = {
  */
 export const OAUTH_HOOKS = {
   after: createAuthMiddleware(async (ctx) => {
-    // Check if this is a Microsoft OAuth callback
-    if (ctx.path === "/callback/microsoft") {
-      authLogger.info("Microsoft OAuth callback completed", {
+    // Enhanced logging for all OAuth callbacks
+    if (ctx.path?.includes("/callback/")) {
+      const provider = ctx.path.split("/callback/")[1];
+      authLogger.info("OAuth callback completed", {
+        provider,
+        path: ctx.path,
         hasUser: !!ctx.context?.newSession?.user,
         hasSession: !!ctx.context?.newSession,
+        hasAccount: !!ctx.context?.account,
       });
 
-      // Log role assignment for debugging
-      if (ctx.context?.newSession?.user) {
-        const user = ctx.context.newSession.user;
-        authLogger.debug("User role after OAuth", {
-          userId: user.id,
-          userRole: user.role || "user",
-          userEmail: user.email,
+      // Detailed logging and role processing for Microsoft OAuth callback
+      if (provider === "microsoft") {
+        authLogger.info("Microsoft OAuth callback details", {
+          hasUser: !!ctx.context?.newSession?.user,
+          hasSession: !!ctx.context?.newSession,
+          hasAccount: !!ctx.context?.account,
+          isNewUser: !!ctx.context?.isNewUser,
         });
+
+        // Process Azure AD roles from tokens
+        if (ctx.context?.account && ctx.context?.newSession?.user) {
+          const account = ctx.context.account;
+          const user = ctx.context.newSession.user;
+
+          // Extract roles from Azure AD tokens
+          const tokens = {
+            id_token: account.idToken,
+            access_token: account.accessToken,
+          };
+
+          try {
+            const extractedRoles = extractRolesFromTokens(tokens);
+            const mappedRole = mapAzureRolesToBetterAuth(extractedRoles, PROVIDER_CONFIGS.azure?.roleMappings);
+
+            authLogger.info("Azure AD role mapping completed in OAuth hook", {
+              extractedRoles,
+              mappedRole,
+              userId: user.id,
+              customMappingsUsed: !!PROVIDER_CONFIGS.azure?.roleMappings?.length,
+            });
+
+            // Update user role if different from current role
+            // This ensures roles are synced on every login, handling role changes in Azure AD
+            if (user.role !== mappedRole) {
+              authLogger.info("Updating user role from Azure AD", {
+                currentRole: user.role,
+                newRole: mappedRole,
+                userId: user.id,
+              });
+
+              // Import the database and user schema to update the role
+              const { db } = await import("@/db");
+              const { user: userTable } = await import("@/db/schema/auth");
+              const { eq } = await import("drizzle-orm");
+
+              try {
+                // Update the user's role in the database
+                await db
+                  .update(userTable)
+                  .set({
+                    role: mappedRole,
+                    updatedAt: new Date(),
+                    lastLoginAt: new Date(),
+                  })
+                  .where(eq(userTable.id, user.id));
+
+                authLogger.info("User role successfully updated in database", {
+                  userId: user.id,
+                  newRole: mappedRole,
+                });
+
+                // Update the session user object to reflect the new role
+                if (ctx.context.newSession) {
+                  ctx.context.newSession.user.role = mappedRole;
+                }
+              } catch (dbError) {
+                authLogger.error("Failed to update user role in database", {
+                  error: String(dbError),
+                  userId: user.id,
+                  attemptedRole: mappedRole,
+                });
+              }
+            } else {
+              authLogger.debug("User role already matches Azure AD role", {
+                role: mappedRole,
+                userId: user.id,
+              });
+
+              // Still update lastLoginAt even if role hasn't changed
+              const { db } = await import("@/db");
+              const { user: userTable } = await import("@/db/schema/auth");
+              const { eq } = await import("drizzle-orm");
+
+              await db
+                .update(userTable)
+                .set({
+                  lastLoginAt: new Date(),
+                  updatedAt: new Date(),
+                })
+                .where(eq(userTable.id, user.id))
+                .catch((error) => {
+                  authLogger.warn("Failed to update lastLoginAt", { error: String(error) });
+                });
+            }
+          } catch (error) {
+            authLogger.error("Failed to process Azure AD roles in OAuth hook", {
+              error: String(error),
+              userId: user.id,
+            });
+          }
+        }
+
+        // Log user details after OAuth
+        if (ctx.context?.newSession?.user) {
+          const user = ctx.context.newSession.user;
+          authLogger.info("User created/updated after Microsoft OAuth", {
+            userId: user.id,
+            userRole: (user as AuthSession["user"]).role || "user",
+            userEmail: user.email,
+            userName: user.name,
+            emailVerified: user.emailVerified,
+            isNewUser: !!ctx.context?.isNewUser,
+          });
+        }
+
+        // Log account details
+        if (ctx.context?.account) {
+          const account = ctx.context.account;
+          authLogger.debug("Microsoft account details", {
+            accountId: account.id,
+            providerId: account.providerId,
+            providerAccountId: account.accountId,
+            hasAccessToken: !!account.accessToken,
+            hasIdToken: !!account.idToken,
+            hasRefreshToken: !!account.refreshToken,
+          });
+        }
       }
     }
   }),

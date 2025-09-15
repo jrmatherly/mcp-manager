@@ -6,9 +6,7 @@
  */
 
 import { authLogger, type LogContext } from "@/lib/logger";
-
-// Better-Auth role type
-export type BetterAuthRole = "admin" | "server_owner" | "user";
+import type { MicrosoftProfile, OAuthTokens, BetterAuthRole } from "@/types/better-auth";
 
 // Azure AD role mapping configuration
 export interface AzureRoleMapping {
@@ -104,7 +102,7 @@ export const AZURE_OAUTH_CONFIG = {
  * Extracts roles from Azure AD token claims
  * Supports both ID tokens and access tokens
  */
-export function extractRolesFromTokens(tokens: { id_token?: string; access_token?: string; [key: string]: unknown }): string[] {
+export function extractRolesFromTokens(tokens: OAuthTokens): string[] {
   const extractedRoles: string[] = [];
   const context: LogContext = {
     hasIdToken: !!tokens.id_token,
@@ -117,12 +115,40 @@ export function extractRolesFromTokens(tokens: { id_token?: string; access_token
   if (tokens.id_token) {
     try {
       const payload = JSON.parse(atob(tokens.id_token.split(".")[1]));
-      authLogger.debug("ID token payload extracted", { hasRoles: !!payload.roles });
+      authLogger.debug("ID token payload extracted", {
+        hasRoles: !!payload.roles,
+        hasGroups: !!payload.groups,
+        sub: payload.sub,
+        aud: payload.aud,
+        iss: payload.iss,
+        preferred_username: payload.preferred_username,
+      });
+
+      // Log all available claims for debugging
+      authLogger.debug("ID token claims", {
+        roles: payload.roles || [],
+        groups: payload.groups || [],
+        appRoles: payload.app_roles || [],
+        wids: payload.wids || [], // Well-known IDs for Azure AD built-in roles
+      });
 
       // Check for roles in the token payload
       if (payload.roles && Array.isArray(payload.roles)) {
         extractedRoles.push(...payload.roles);
-        authLogger.debug("Roles found in ID token", { roles: payload.roles });
+        authLogger.info("Roles found in ID token", { roles: payload.roles, count: payload.roles.length });
+      }
+
+      // Also check for app_roles (alternative claim name)
+      if (payload.app_roles && Array.isArray(payload.app_roles)) {
+        extractedRoles.push(...payload.app_roles);
+        authLogger.info("App roles found in ID token", { appRoles: payload.app_roles, count: payload.app_roles.length });
+      }
+
+      // Check for groups if configured to emit as roles
+      if (payload.groups && Array.isArray(payload.groups) && extractedRoles.length === 0) {
+        authLogger.debug("Groups found in ID token (no roles present)", { groups: payload.groups, count: payload.groups.length });
+        // Groups might contain role GUIDs if configured with emit_as_roles
+        extractedRoles.push(...payload.groups);
       }
     } catch (error) {
       authLogger.error("Failed to parse ID token", { error: String(error) });
@@ -155,19 +181,7 @@ export function extractRolesFromTokens(tokens: { id_token?: string; access_token
 /**
  * Validates Azure AD profile data and returns normalized user profile
  */
-export function normalizeAzureProfile(
-  profile: {
-    id?: string;
-    sub?: string;
-    name?: string;
-    displayName?: string;
-    email?: string;
-    mail?: string;
-    userPrincipalName?: string;
-    picture?: string;
-  },
-  mappedRole: BetterAuthRole,
-) {
+export function normalizeAzureProfile(profile: MicrosoftProfile, mappedRole: BetterAuthRole) {
   const normalizedProfile = {
     id: profile.id || profile.sub,
     name: profile.name || profile.displayName,

@@ -41,7 +41,7 @@ export {
 } from "./github";
 
 // Common types used across providers
-export type { BetterAuthRole } from "./azure"; // Re-export from any provider since they're the same
+export type { BetterAuthRole } from "@/types/better-auth"; // Re-export from centralized types
 
 /**
  * Provider-specific configuration interfaces

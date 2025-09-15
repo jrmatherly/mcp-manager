@@ -4,6 +4,29 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { desc } from "drizzle-orm";
 
+// Type for raw user data from Better Auth API
+interface BetterAuthUserData {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  image?: string | null;
+  role?: string;
+  banned?: boolean;
+  banReason?: string | null;
+  banExpires?: Date | null;
+  [key: string]: unknown;
+}
+
+// Type for Better Auth API responses
+interface BetterAuthListUsersResponse {
+  users: BetterAuthUserData[];
+  total?: number;
+  [key: string]: unknown;
+}
+
 export interface UserWithDetails {
   id: string;
   name: string;
@@ -74,7 +97,11 @@ export async function getUsers(options: GetUsersOptions = {}): Promise<{ users: 
   }
 
   // Get users from Better Auth
-  const result = await auth.api.listUsers({
+  const result = await (
+    auth.api as unknown as {
+      listUsers: (params: { headers: Headers; query: Record<string, unknown> }) => Promise<BetterAuthListUsersResponse>;
+    }
+  ).listUsers({
     headers: await headers(),
     query,
   });
@@ -118,7 +145,7 @@ export async function getUsers(options: GetUsersOptions = {}): Promise<{ users: 
   }, {} as Record<string, Date>);
 
   // Transform the raw data into the format expected by the UsersTable component
-  const users: UserWithDetails[] = result.users.map((user) => {
+  const users: UserWithDetails[] = result.users.map((user: BetterAuthUserData) => {
     const accounts = accountsByUser[user.id] || [];
     const banned = user.banned ?? false;
     const banReason = user.banReason || "";
