@@ -29,7 +29,7 @@ const Navbar = () => {
         {/* Logo/Brand */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 border border-border/40">
               <Image src="/logo.png" alt="MCP Manger Logo" width={24} height={24} className="h-6 w-6 object-contain" />
             </div>
             <span className="font-bold text-xl">MCP Manager Starter</span>

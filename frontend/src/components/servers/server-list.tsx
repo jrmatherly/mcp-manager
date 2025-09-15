@@ -142,23 +142,23 @@ export function ServerList({ onCreateServer, onEditServer }: ServerListProps) {
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="text-center p-4 border rounded-lg">
+        <div className="text-center p-4 border rounded-lg transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
           <div className="text-2xl font-bold">{filterCounts.total}</div>
           <div className="text-sm text-muted-foreground">Total Servers</div>
         </div>
-        <div className="text-center p-4 border rounded-lg">
+        <div className="text-center p-4 border rounded-lg transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filterCounts.active}</div>
           <div className="text-sm text-muted-foreground">Active</div>
         </div>
-        <div className="text-center p-4 border rounded-lg">
+        <div className="text-center p-4 border rounded-lg transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
           <div className="text-2xl font-bold text-muted-foreground">{filterCounts.inactive}</div>
           <div className="text-sm text-muted-foreground">Inactive</div>
         </div>
-        <div className="text-center p-4 border rounded-lg">
+        <div className="text-center p-4 border rounded-lg transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filterCounts.healthy}</div>
           <div className="text-sm text-muted-foreground">Healthy</div>
         </div>
-        <div className="text-center p-4 border rounded-lg">
+        <div className="text-center p-4 border rounded-lg transition-all hover:shadow-card-hover-enhanced hover:-translate-y-0.5">
           <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filterCounts.unhealthy}</div>
           <div className="text-sm text-muted-foreground">Unhealthy</div>
         </div>

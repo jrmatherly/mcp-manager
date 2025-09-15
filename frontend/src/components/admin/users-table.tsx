@@ -33,11 +33,11 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const getAccountIcon = (account: string) => {
   switch (account) {
     case "credential":
-      return <Mail className="h-4 w-4 dark:text-neutral-300" />;
+      return <Mail className="h-4 w-4" />;
     case "github":
-      return <GithubIcon className="h-4 w-4 dark:text-neutral-300" />;
+      return <GithubIcon className="h-4 w-4" />;
     case "google":
-      return <GoogleIcon className="h-4 w-4 dark:text-neutral-300" />;
+      return <GoogleIcon className="h-4 w-4" />;
     default:
       return null;
   }
@@ -397,7 +397,7 @@ export function UsersTable() {
                       {user.verified ? (
                         <Badge
                           variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700 flex items-center gap-1 px-2 py-1 text-xs"
+                          className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800 flex items-center gap-1 px-2 py-1 text-xs"
                         >
                           <CheckCircle className="h-3 w-3" />
                           Verified
@@ -415,11 +415,7 @@ export function UsersTable() {
                     <TableCell className="px-4 py-3">
                       <div className="flex -space-x-2">
                         {user.accounts.map((account) => (
-                          <div
-                            key={account}
-                            className="rounded-full bg-muted p-1.5 text-muted-foreground dark:bg-neutral-700"
-                            title={account}
-                          >
+                          <div key={account} className="rounded-full bg-muted p-1.5 text-muted-foreground dark:bg-muted" title={account}>
                             {getAccountIcon(account)}
                           </div>
                         ))}
@@ -430,8 +426,8 @@ export function UsersTable() {
                         variant="outline"
                         className={`flex items-center gap-1 px-2 py-1 text-xs ${
                           user.role === "admin"
-                            ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700"
-                            : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700"
+                            ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
+                            : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
                         }`}
                       >
                         {user.role === "admin" ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
@@ -457,7 +453,7 @@ export function UsersTable() {
                       ) : (
                         <Badge
                           variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700 flex items-center gap-1 px-2 py-1 text-xs"
+                          className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800 flex items-center gap-1 px-2 py-1 text-xs"
                         >
                           <Check className="h-3 w-3" />
                           Active
