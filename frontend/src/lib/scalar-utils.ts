@@ -171,14 +171,12 @@ export function createRoleBasedCSS(userRole: string): string {
 
 /**
  * Performance-optimized CDN configuration
+ *
+ * Note: Disabled CDN usage to avoid version mismatches and export field warnings.
+ * Using locally installed @scalar/nextjs-api-reference package instead.
  */
 export function getCDNConfig(isProduction: boolean): string | undefined {
-  if (isProduction) {
-    // Pin specific version for production stability
-    return "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.25.28";
-  }
-
-  // Use default/latest for development
+  // Always use local package to avoid CDN issues and version mismatches
   return undefined;
 }
 

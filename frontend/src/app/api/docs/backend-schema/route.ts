@@ -38,6 +38,17 @@ export async function GET(request: NextRequest) {
       throw new Error(`Backend API returned ${backendResponse.status}: ${backendResponse.statusText}`);
     }
 
+    // Check if response is JSON (not HTML error page)
+    const contentType = backendResponse.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await backendResponse.text();
+      apiLogger.warn("Backend returned non-JSON response", {
+        contentType,
+        responsePreview: text.substring(0, 100),
+      });
+      throw new Error(`Backend returned ${contentType} instead of JSON. Backend may not be running.`);
+    }
+
     const backendSchema: OpenAPIV3.Document = await backendResponse.json();
 
     // Enhance the backend schema with better organization and path prefixing

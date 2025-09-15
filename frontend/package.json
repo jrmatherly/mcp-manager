@@ -1,9 +1,9 @@
 {
-  "name": "fastmcp-manager-frontend",
+  "name": "mcp-manager-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "FastMCP Manager Frontend",
+  "description": "MCP Manager Frontend",
   "author": "Jason Matherly",
   "license": "MIT",
   "homepage": "https://matherly.net",

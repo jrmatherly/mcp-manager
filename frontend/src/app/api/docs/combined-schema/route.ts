@@ -48,23 +48,38 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Handle application schema
-    let appSchema: OpenAPIV3.Document;
+    let appSchema: OpenAPIV3.Document | null = null;
     if (appResponse.status === "fulfilled" && appResponse.value.ok) {
-      appSchema = await appResponse.value.json();
+      try {
+        const contentType = appResponse.value.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          appSchema = await appResponse.value.json();
+          apiLogger.info("Application schema loaded successfully");
+        } else {
+          apiLogger.warn("Application schema returned non-JSON response", { contentType });
+        }
+      } catch (error) {
+        apiLogger.warn("Application schema parsing failed", { error });
+      }
     } else {
-      throw new Error(
-        `Failed to fetch application schema: ${appResponse.status === "fulfilled" ? appResponse.value.status : "Network error"}`,
-      );
+      apiLogger.warn("Application schema unavailable", {
+        status: appResponse.status === "fulfilled" ? appResponse.value.status : "rejected",
+      });
     }
 
     // Handle backend schema (optional - don't fail if backend is unavailable)
     let backendSchema: OpenAPIV3.Document | null = null;
     if (backendResponse.status === "fulfilled" && backendResponse.value.ok) {
       try {
-        backendSchema = await backendResponse.value.json();
-        apiLogger.info("Backend schema included in combined documentation");
+        const contentType = backendResponse.value.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          backendSchema = await backendResponse.value.json();
+          apiLogger.info("Backend schema included in combined documentation");
+        } else {
+          apiLogger.warn("Backend schema returned non-JSON response", { contentType });
+        }
       } catch (error) {
-        apiLogger.warn("Backend schema fetch succeeded but parsing failed", { error });
+        apiLogger.warn("Backend schema parsing failed", { error });
       }
     } else {
       apiLogger.warn("Backend schema unavailable, proceeding without it", {
@@ -219,7 +234,7 @@ For API support, please contact us at api@mcp-registry.com or visit our support 
       paths: {
         // Merge paths from all schemas with proper type casting
         ...(authSchema.paths as OpenAPIV3.PathsObject),
-        ...(appSchema.paths as OpenAPIV3.PathsObject),
+        ...((appSchema?.paths as OpenAPIV3.PathsObject) || {}),
         ...((backendSchema?.paths as OpenAPIV3.PathsObject) || {}),
       } as OpenAPIV3.PathsObject,
       components: {
@@ -230,12 +245,12 @@ For API support, please contact us at api@mcp-registry.com or visit our support 
         schemas: {
           // Merge schemas from all APIs
           ...authSchema.components?.schemas,
-          ...appSchema.components?.schemas,
+          ...(appSchema?.components?.schemas || {}),
           ...(backendSchema?.components?.schemas || {}),
         },
         responses: {
           // Merge responses from all schemas
-          ...appSchema.components?.responses,
+          ...(appSchema?.components?.responses || {}),
           ...(backendSchema?.components?.responses || {}),
         },
       },
