@@ -5,8 +5,7 @@
  * cleanup, and database state verification.
  */
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { testDb as db, sql } from "./test-db";
 
 export interface TestDataIds {
   serverId: string;
@@ -27,41 +26,57 @@ export async function createTestData(): Promise<TestDataIds> {
     userId: `test-user-${timestamp}`,
   };
 
-  // Create test user first (without tenant_id)
-  await db.execute(sql`
-    INSERT INTO "user" (id, name, email, email_verified, is_active, created_at, updated_at)
-    VALUES (${testIds.userId}, 'Test User', 'test@example.com', true, true, NOW(), NOW())
-    ON CONFLICT (id) DO NOTHING
-  `);
+  try {
+    // Create test user first (without tenant_id)
+    await db.execute(sql`
+      INSERT INTO "user" (id, name, email, email_verified, is_active, created_at, updated_at)
+      VALUES (${testIds.userId}, 'Test User', 'test@example.com', true, true, NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    `);
 
-  // Create test tenant with user as owner
-  await db.execute(sql`
-    INSERT INTO tenant (id, name, slug, owner_id, plan_type, status, created_at, updated_at)
-    VALUES (${testIds.tenantId}, 'Test Tenant', ${"test-tenant-" + timestamp}, ${testIds.userId}, 'free', 'active', NOW(), NOW())
-    ON CONFLICT (id) DO NOTHING
-  `);
+    // Create test tenant with user as owner
+    await db.execute(sql`
+      INSERT INTO tenant (id, name, slug, owner_id, plan_type, status, created_at, updated_at)
+      VALUES (${testIds.tenantId}, 'Test Tenant', ${"test-tenant-" + timestamp}, ${testIds.userId}, 'free', 'active', NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    `);
 
-  // Update user with tenant_id
-  await db.execute(sql`
-    UPDATE "user"
-    SET tenant_id = ${testIds.tenantId}
-    WHERE id = ${testIds.userId}
-  `);
+    // Update user with tenant_id
+    await db.execute(sql`
+      UPDATE "user"
+      SET tenant_id = ${testIds.tenantId}
+      WHERE id = ${testIds.userId}
+    `);
 
-  // Create test MCP server
-  await db.execute(sql`
-    INSERT INTO mcp_server (
-      id, name, version, endpoint_url, transport_type, owner_id, tenant_id,
-      status, health_status, request_count, error_count, avg_response_time, uptime
-    )
-    VALUES (
-      ${testIds.serverId}, 'Test Server', '1.0.0', 'http://test.example.com', 'http',
-      ${testIds.userId}, ${testIds.tenantId}, 'active', 'healthy', 100, 5, 250.0, 99.5
-    )
-    ON CONFLICT (id) DO NOTHING
-  `);
+    // Create test MCP server with explicit timestamps
+    await db.execute(sql`
+      INSERT INTO mcp_server (
+        id, name, version, endpoint_url, transport_type, owner_id, tenant_id,
+        status, health_status, request_count, error_count, avg_response_time, uptime,
+        created_at, updated_at
+      )
+      VALUES (
+        ${testIds.serverId}, 'Test Server', '1.0.0', 'http://test.example.com', 'http',
+        ${testIds.userId}, ${testIds.tenantId}, 'active', 'healthy', 100, 5, 250.0, 99.5,
+        NOW(), NOW()
+      )
+      ON CONFLICT (id) DO NOTHING
+    `);
 
-  return testIds;
+    return testIds;
+  } catch (error: any) {
+    console.error("Failed to create test data:", error);
+    console.error("Test IDs:", testIds);
+
+    // Clean up any partially created data
+    try {
+      await cleanupTestData(testIds);
+    } catch (cleanupError) {
+      console.error("Failed to cleanup partial test data:", cleanupError);
+    }
+
+    throw new Error(`Test data creation failed: ${error.message || error}`);
+  }
 }
 
 /**
@@ -200,12 +215,17 @@ export async function createTestPerformanceAlert(serverId: string): Promise<stri
  * Clean up all test data
  */
 export async function cleanupTestData(testIds: TestDataIds): Promise<void> {
+  if (!testIds) {
+    return;
+  }
+
   // Clean up in reverse order of dependencies
   const cleanupOps = [
     { table: "performance_alerts", where: "server_id", value: testIds.serverId },
     { table: "connection_pools", where: "server_id", value: testIds.serverId },
     { table: "circuit_breakers", where: "server_id", value: testIds.serverId },
     { table: "request_logs", where: "target_server_id", value: testIds.serverId },
+    { table: "mcp_server_health_check", where: "server_id", value: testIds.serverId },
     { table: "mcp_resource", where: "server_id", value: testIds.serverId },
     { table: "mcp_tool", where: "server_id", value: testIds.serverId },
     { table: "mcp_server", where: "id", value: testIds.serverId },
@@ -214,6 +234,8 @@ export async function cleanupTestData(testIds: TestDataIds): Promise<void> {
   ];
 
   for (const { table, where, value } of cleanupOps) {
+    if (!value) continue; // Skip if value is undefined
+
     try {
       await db.execute(sql.raw(`DELETE FROM ${table} WHERE ${where} = '${value}'`));
     } catch (error: any) {
@@ -222,7 +244,8 @@ export async function cleanupTestData(testIds: TestDataIds): Promise<void> {
         console.log(`Table ${table} does not exist yet, skipping cleanup`);
         continue;
       }
-      throw error;
+      // Log other errors but don't stop cleanup process
+      console.error(`Failed to cleanup ${table} where ${where} = '${value}':`, error.message);
     }
   }
 }
@@ -238,6 +261,9 @@ export async function cleanupTestDataByPattern(): Promise<void> {
     { table: "circuit_breakers", column: "id", pattern: "test-breaker-%", isText: false },
     { table: "connection_pools", column: "id", pattern: "test-pool-%", isText: false },
     { table: "performance_alerts", column: "id", pattern: "test-alert-%", isText: false },
+    { table: "mcp_server_health_check", column: "server_id", pattern: "test-server-%", isText: true },
+    { table: "mcp_resource", column: "server_id", pattern: "test-server-%", isText: true },
+    { table: "mcp_tool", column: "server_id", pattern: "test-server-%", isText: true },
     { table: "mcp_server", column: "id", pattern: "test-server-%", isText: true },
     { table: '"user"', column: "id", pattern: "test-user-%", isText: true },
     { table: "tenant", column: "id", pattern: "test-tenant-%", isText: true },

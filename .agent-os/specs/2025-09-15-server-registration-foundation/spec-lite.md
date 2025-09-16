@@ -1,0 +1,3 @@
+# Spec Summary (Lite)
+
+Implement MCP server registration and management foundation enabling administrators to register, configure, and monitor MCP servers through a secure portal. Establishes core infrastructure for server lifecycle management with enhanced API key security (mcp_ prefix, 64-char, 90-day rotation) and comprehensive audit logging. Includes REST APIs, React dashboard components, health monitoring, and basic authentication framework for Phase 1 of the MCP Registry Gateway.
